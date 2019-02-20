@@ -67,7 +67,7 @@ module.exports = {
 
 	devServer: {
 		publicPath: "/",
-		contentBase: "/",
+		contentBase: path.resolve("."),
 		host: "localhost",
 		port: 7005,
 		open: true,
@@ -80,6 +80,7 @@ module.exports = {
 	},
 
 	output: {
+		publicPath: "/",
 		filename: '[name].[hash].js'
 	},
 

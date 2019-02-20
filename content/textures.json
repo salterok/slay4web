@@ -1,0 +1,215 @@
+{
+    "frames": {
+        "m1": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "m1-mask": {
+            "frame": {
+                "x": 1,
+                "y": 117,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "m2": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "m3": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "m4": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "ownCapatal": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "capital": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "fort": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "tree": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "cross": {
+            "frame": {
+                "x": 1,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        }
+    },
+    "meta": {
+        "app": "http://www.codeandweb.com/texturepacker",
+        "version": "1.0",
+        "image": "Medieval.bmp",
+        "format": "RGB888",
+        "size": {
+            "w": 134,
+            "h": 282
+        },
+        "scale": "1"
+    }
+}
