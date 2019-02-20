@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-19 19:09:55
+ * @Last Modified time: 2019-02-20 19:21:11
  */
 
 import * as PIXI from "pixi.js";
@@ -67,6 +67,18 @@ export class Hex {
         otherCorners.forEach(({ x, y }) => this.view.lineTo(x, y));
         // finish at the first corner
         this.view.lineTo(firstCorner.x, firstCorner.y);
+
+        if (this.cell.marker) {
+            if (!this.text) {
+                this.text = new PIXI.Text(this.cell.marker, { fontFamily : "Arial", fontSize: 24, fill : 0xff1010, align : "center" });
+            }
+            
+            const center = this.cell.center();
+            this.text.x = point.x + center.x;
+            this.text.y = point.y + center.y;
+            this.text.anchor.set(0.5);
+            this.view.addChild(this.text);
+        }
     }
     
 }
