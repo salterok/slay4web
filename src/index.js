@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-24 06:34:03
+ * @Last Modified time: 2019-02-24 07:43:15
  */
 
 import "./patcher";
@@ -29,25 +29,70 @@ loader
 
 loader.load(setup);
 
+function prepareSprite(textures, name) {
+    const sprite = new PIXI.TilingSprite(textures[name]);
+    sprite.mask = new PIXI.TilingSprite(textures[name + "-mask"]);
+    sprite.cacheAsBitmap = true;
+
+    return sprite;
+}
+
 function setup() {
     const textures = loader.resources["main"].textures;
     console.log("loaded", textures);
 
-    const sprite = new PIXI.TilingSprite(textures.m1);
+    const m1 = prepareSprite(textures, "m1");
+    const m2 = prepareSprite(textures, "m2");
+    const m3 = prepareSprite(textures, "m3");
+    const m4 = prepareSprite(textures, "m4");
 
-    sprite.mask = new PIXI.TilingSprite(textures["m1-mask"]);
+    const ownCapital = prepareSprite(textures, "ownCapital");
+    const capital = prepareSprite(textures, "capital");
+    const fort = prepareSprite(textures, "fort");
+    const tree = prepareSprite(textures, "tree");
+    const deadPlace = prepareSprite(textures, "deadPlace");
 
     // sprite.tint = 0xff0000;
+    
+    m1.interactive = true;
+    m1.cursor = "pointer";
+    m1.addListener("click", () => {
+        alert("asd")
+    });
 
-    sprite.interactive = true;
-    sprite.buttonMode = true;
+    
+
+    
 
     // sprite.x = 20;
     // sprite.scale = 32;
     // sprite.width = baseSize * 5;
     // sprite.height = baseSize * ;
-    sprite.cacheAsBitmap = true;
-    viewport.addChild(sprite);
+    viewport.addChild(m1);
+
+    const cellContentRenderer = (type) => {
+        switch (type) {
+            case "m1":
+                return new PIXI.Sprite(m1.texture);
+        }
+        return null;
+    };
+
+    const renderItems = grid.map(cell => {
+        const hex = new Hex(cell, cellContentRenderer);
+    
+        hex.init();
+    
+        viewport.addChild(hex.view);
+        return hex;
+    });
+    
+    function animate() {
+        renderItems.forEach(hex => hex.update());
+        app.render();
+        requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
 }
 
 const background = new PIXI.Graphics();
@@ -231,18 +276,4 @@ console.log(grid, Array.from(grid.values()));
 
 // viewport.sortableChildren = true;
 
-const renderItems = grid.map(cell => {
-    const hex = new Hex(cell);
 
-    hex.init();
-
-    viewport.addChild(hex.view);
-    return hex;
-});
-
-function animate() {
-    renderItems.forEach(hex => hex.update());
-    app.render();
-    requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);

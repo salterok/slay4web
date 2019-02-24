@@ -2,28 +2,25 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-20 19:21:11
+ * @Last Modified time: 2019-02-24 07:52:00
  */
 
 import * as PIXI from "pixi.js";
 
-const landType = {
-    "grass": {
-        color: 0x95db24,
-    }
-};
 
 export class Hex {
-    constructor(cell) {
+    constructor(cell, renderer) {
         const graphics = new PIXI.Graphics();
         graphics.interactive = true;
         this.view = graphics;
         this.cell = cell;
+        this.renderer = renderer;
         this.state = {
-            hasTree: false,
-            hasVillage: false,
-            hasFort: false,
-            type: "grass",
+            hover: false,
+        };
+        this.model = {
+            placement: null,
+            player: null,
         };
 
         // TODO: investigate best way to track if update needed
@@ -38,10 +35,19 @@ export class Hex {
         this.view.addListener("mouseout", () => {
             this.state.hover = false;
         });
+        // test code
+        this.view.addListener("click", (e) => {
+            this.model.placement = "m1";
+        });
+    }
+
+    setModel(nextModel) {
+        this.model = nextModel;
     }
 
     update() {
-        const { hover, type } = this.state;
+        const { hover } = this.state;
+        const { player, placement } = this.model;
         const point = this.cell.toPoint();
 
         this.view.clear();
@@ -54,7 +60,8 @@ export class Hex {
             this.view.lineStyle(1, 0x999999);
         }
         
-        this.view.beginFill(landType[type].color);
+        // landType[player].color
+        this.view.beginFill(0x95db24);
         
 
         const corners = this.cell.corners().map(corner => corner.add(point));
@@ -67,6 +74,15 @@ export class Hex {
         otherCorners.forEach(({ x, y }) => this.view.lineTo(x, y));
         // finish at the first corner
         this.view.lineTo(firstCorner.x, firstCorner.y);
+
+        const child = this.renderer(placement);
+        if (child) {
+            const center = this.cell.center();
+            child.x = point.x + center.x;
+            child.y = point.y + center.y;
+            child.anchor.set(0.5);
+            this.view.addChild(child);
+        }
 
         if (this.cell.marker) {
             if (!this.text) {
