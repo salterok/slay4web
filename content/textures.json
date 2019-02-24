@@ -1,4 +1,6 @@
 {
+    "ws": "1 20 39 58 77 96 115",
+    "hs": "1 30 59 88 117 146 175 204 233",
     "frames": {
         "m1": {
             "frame": {
@@ -42,8 +44,28 @@
         },
         "m2": {
             "frame": {
-                "x": 1,
+                "x": 20,
                 "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "m2-mask": {
+            "frame": {
+                "x": 20,
+                "y": 117,
                 "w": 18,
                 "h": 28
             },
@@ -62,8 +84,28 @@
         },
         "m3": {
             "frame": {
-                "x": 1,
+                "x": 39,
                 "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "m3-mask": {
+            "frame": {
+                "x": 39,
+                "y": 117,
                 "w": 18,
                 "h": 28
             },
@@ -82,7 +124,7 @@
         },
         "m4": {
             "frame": {
-                "x": 1,
+                "x": 58,
                 "y": 1,
                 "w": 18,
                 "h": 28
@@ -100,10 +142,50 @@
                 "h": 28
             }
         },
-        "ownCapatal": {
+        "m4-mask": {
             "frame": {
-                "x": 1,
+                "x": 58,
+                "y": 117,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "ownCapital": {
+            "frame": {
+                "x": 77,
                 "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "ownCapital-mask": {
+            "frame": {
+                "x": 77,
+                "y": 117,
                 "w": 18,
                 "h": 28
             },
@@ -122,8 +204,28 @@
         },
         "capital": {
             "frame": {
-                "x": 1,
+                "x": 96,
                 "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "capital-mask": {
+            "frame": {
+                "x": 96,
+                "y": 117,
                 "w": 18,
                 "h": 28
             },
@@ -142,7 +244,27 @@
         },
         "fort": {
             "frame": {
-                "x": 1,
+                "x": 115,
+                "y": 1,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "fort-mask": {
+            "frame": {
+                "x": 115,
                 "y": 1,
                 "w": 18,
                 "h": 28
@@ -162,8 +284,8 @@
         },
         "tree": {
             "frame": {
-                "x": 1,
-                "y": 1,
+                "x": 96,
+                "y": 30,
                 "w": 18,
                 "h": 28
             },
@@ -180,10 +302,50 @@
                 "h": 28
             }
         },
-        "cross": {
+        "tree-mask": {
             "frame": {
-                "x": 1,
-                "y": 1,
+                "x": 96,
+                "y": 146,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "deadPlace": {
+            "frame": {
+                "x": 115,
+                "y": 30,
+                "w": 18,
+                "h": 28
+            },
+            "rotated": false,
+            "trimmed": false,
+            "spriteSourceSize": {
+                "x": 0,
+                "y": 0,
+                "w": 18,
+                "h": 28
+            },
+            "sourceSize": {
+                "w": 18,
+                "h": 28
+            }
+        },
+        "deadPlace-mask": {
+            "frame": {
+                "x": 115,
+                "y": 146,
                 "w": 18,
                 "h": 28
             },
