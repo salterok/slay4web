@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-24 07:43:15
+ * @Last Modified time: 2019-02-24 21:44:10
  */
 
 import "./patcher";
@@ -30,11 +30,16 @@ loader
 loader.load(setup);
 
 function prepareSprite(textures, name) {
+    const texture = PIXI.RenderTexture.create({ width: 18, height: 28 });
+
     const sprite = new PIXI.TilingSprite(textures[name]);
     sprite.mask = new PIXI.TilingSprite(textures[name + "-mask"]);
-    sprite.cacheAsBitmap = true;
 
-    return sprite;
+    app.renderer.render(sprite, texture);
+    
+    texture.cacheAsBitmap = true;
+    
+    return texture;
 }
 
 function setup() {
@@ -52,29 +57,18 @@ function setup() {
     const tree = prepareSprite(textures, "tree");
     const deadPlace = prepareSprite(textures, "deadPlace");
 
-    // sprite.tint = 0xff0000;
-    
-    m1.interactive = true;
-    m1.cursor = "pointer";
-    m1.addListener("click", () => {
-        alert("asd")
-    });
-
-    
-
-    
-
-    // sprite.x = 20;
-    // sprite.scale = 32;
-    // sprite.width = baseSize * 5;
-    // sprite.height = baseSize * ;
-    viewport.addChild(m1);
-
     const cellContentRenderer = (type) => {
         switch (type) {
             case "m1":
-                return new PIXI.Sprite(m1.texture);
+                return new PIXI.Sprite(m1);
+            case "m2":
+                return new PIXI.Sprite(m2);
+            case "m3":
+                return new PIXI.Sprite(m3);
+            case "m4":
+                return new PIXI.Sprite(m4);
         }
+        // TODO: return NO_TEXTURE
         return null;
     };
 

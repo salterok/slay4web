@@ -2,11 +2,12 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-24 07:52:00
+ * @Last Modified time: 2019-02-24 08:20:11
  */
 
 import * as PIXI from "pixi.js";
 
+const TypeField = Symbol();
 
 export class Hex {
     constructor(cell, renderer) {
@@ -23,7 +24,6 @@ export class Hex {
             player: null,
         };
 
-        // TODO: investigate best way to track if update needed
         this.needUpdate = true;
     }
 
@@ -31,21 +31,32 @@ export class Hex {
         // TODO: cleanup listeners
         this.view.addListener("mouseover", () => {
             this.state.hover = true;
+            this.needUpdate = true;
         });
         this.view.addListener("mouseout", () => {
             this.state.hover = false;
+            this.needUpdate = true;
         });
         // test code
         this.view.addListener("click", (e) => {
-            this.model.placement = "m1";
+            const p = /m(\d)/i.exec(this.model.placement) || ["m0", "0"];
+            this.model.placement = p[1] >= 4 ? "m1" : "m" + ++p[1];
+            this.needUpdate = true;
         });
     }
 
     setModel(nextModel) {
         this.model = nextModel;
+        this.needUpdate = true;
     }
 
     update() {
+        // TODO: maybe we need forced updates in some cases in the future
+        if (!this.needUpdate) {
+            return;
+        }
+        this.needUpdate = false;
+
         const { hover } = this.state;
         const { player, placement } = this.model;
         const point = this.cell.toPoint();
@@ -75,13 +86,22 @@ export class Hex {
         // finish at the first corner
         this.view.lineTo(firstCorner.x, firstCorner.y);
 
-        const child = this.renderer(placement);
-        if (child) {
-            const center = this.cell.center();
-            child.x = point.x + center.x;
-            child.y = point.y + center.y;
-            child.anchor.set(0.5);
-            this.view.addChild(child);
+        let child = this.view.getChildByName("placement");
+        if (!child || child[TypeField] !== placement) {
+            if (child) {
+                this.view.removeChild(child);
+            }
+            child = this.renderer(placement);
+            if (child) {
+                child.name = "placement";
+                child[TypeField] = placement;
+
+                const center = this.cell.center();
+                child.x = point.x + center.x;
+                child.y = point.y + center.y;
+                child.anchor.set(0.5);
+                this.view.addChild(child);
+            }
         }
 
         if (this.cell.marker) {
