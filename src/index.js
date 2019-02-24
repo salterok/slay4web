@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-20 19:20:55
+ * @Last Modified time: 2019-02-24 06:34:03
  */
 
 import "./patcher";
@@ -128,6 +128,9 @@ function computeGrowLevel(maxLevel, growFactor) {
 function markAreas(grid) {
     let counter = new Map();
     grid.forEach(h => {
+        // if (h.marker) {
+        //     return;
+        // }
         const near = grid.neighborsOf(h);
 
         const set = new Set(near.map(n => n.marker));
@@ -168,15 +171,14 @@ function markAreas(grid) {
 
 /**
  * 
- * @param {{ width: number; height: number, maxHoleSize: number; growFactor: number; Grid: Honeycomb.GridFactory<Honeycomb.Hex<{}>>}} opts 
+ * @param {{ width: number; height: number, holes: number; maxHoleSize: number; growFactor: number; Grid: Honeycomb.GridFactory<Honeycomb.Hex<{}>>}} opts 
  */
 function generateLevel(opts) {    
     let grid = opts.Grid.rectangle({ width: opts.width, height: opts.height });
 
-    const startHoles = 5;
     const holes = [];
     const checked = new Set();
-    for (let i = 0; i < startHoles; i++) {
+    for (let i = 0; i < opts.holes; i++) {
         const hex = markRemoved(grid, { x: rand(opts.width), y: rand(opts.height) });
         holes.push(hex);
         checked.add(hex);
@@ -212,13 +214,17 @@ function generateLevel(opts) {
     return grid;
 }
 
+performance.mark("generateLevel:start");
 const grid = generateLevel({
     Grid,
     width: 20, 
     height: 20,
-    maxHoleSize: 80,
-    growFactor: 0.9,
+    holes: 8,
+    maxHoleSize: 20,
+    growFactor: 0.65,
 });
+performance.mark("generateLevel:end");
+performance.measure("generateLevel", "generateLevel:start", "generateLevel:end");
 
 console.log(grid, Array.from(grid.values()));
 
