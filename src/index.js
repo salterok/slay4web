@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-24 21:44:10
+ * @Last Modified time: 2019-02-25 04:03:16
  */
 
 import "./patcher";
@@ -83,7 +83,7 @@ function setup() {
     
     function animate() {
         renderItems.forEach(hex => hex.update());
-        app.render();
+        // app.render();
         requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
