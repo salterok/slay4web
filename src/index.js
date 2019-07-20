@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-25 04:03:16
+ * @Last Modified time: 2019-07-20 03:04:24
  */
 
 import "./patcher";
@@ -10,6 +10,8 @@ import * as PIXI from "pixi.js";
 import * as Viewport from "imports-loader?PIXI=pixi.js!pixi-viewport";
 import * as Honeycomb from "honeycomb-grid";
 import { Hex } from "./Hex";
+
+import { Game } from "./Game";
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -266,6 +268,20 @@ performance.mark("generateLevel:end");
 performance.measure("generateLevel", "generateLevel:start", "generateLevel:end");
 
 console.log(grid, Array.from(grid.values()));
+
+globalThis.Grid = Grid;
+globalThis.Honeycomb = Honeycomb;
+
+
+const pl = {
+    async *getActions(initial) {
+        while (initial.timeLeft > 0) {
+            initial = yield { type: "some turn", time: initial.timeLeft };
+        }
+    }
+};
+
+const game = new Game(grid, [pl]);
 
 
 // viewport.sortableChildren = true;

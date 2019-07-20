@@ -29,6 +29,7 @@ module.exports = {
 	module: {
 		rules: [
 			{
+				test: /\.js$/,
 				include: [path.resolve(__dirname, 'src')],
 				loader: 'babel-loader',
 
@@ -44,8 +45,14 @@ module.exports = {
 						]
 					]
 				},
-
-				test: /\.js$/
+			},
+			{
+				test: /\.tsx?$/,
+				include: [path.resolve(__dirname, 'src')],
+				loader: 'ts-loader',
+				options: {
+					experimentalWatchApi: true,
+				}
 			},
 			{
 				test: /\.(scss|css)$/,
@@ -64,6 +71,9 @@ module.exports = {
 			}
 		]
 	},
+	resolve: {
+		extensions: [ '.tsx', '.ts', '.js' ]
+	},
 
 	devServer: {
 		publicPath: "/",
@@ -74,6 +84,7 @@ module.exports = {
 		historyApiFallback: true,
 		hot: true,
 	},
+	devtool: 'inline-source-map',
 
 	entry: {
 		app: './src/index.js'

@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "module": "es2015",
+        "target": "es2018",
+        "allowJs": true,
+
+        "sourceMap": true,
+        "typeRoots": [
+            "src/types",
+        ]
+    },
+    "include": [
+        "src"
+    ]
+}

@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:48:24 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-26 06:08:41
+ * @Last Modified time: 2019-07-04 13:42:18
  */
 
 interface TurnAction {
@@ -23,3 +23,5 @@ type TurnContractFactory = (initial: TurnActionResponse) => TurnContract<TurnAct
 interface PlayerController {
     getActions(initial: TurnActionResponse): TurnContract<TurnAction>;
 }
+
+type GameMap = any;
