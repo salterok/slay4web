@@ -2,46 +2,14 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-09 19:59:04
+ * @Last Modified time: 2019-07-22 05:56:21
  */
 
 import * as PIXI from "pixi.js";
 import "honeycomb-grid";
 import { Point, Hex,  } from "honeycomb-grid";
 import * as g from "honeycomb-grid";
-// import g2 from "honeycomb-grid";
-
-
-
-const hex2 = g.extendHex({ mambo: "siisi9s9", goza: () => 2 });
-
-g.defineGrid(hex2);
-
-var a3 = hex2(1, 2);
-
-
-
-var a1 = g.Hex({ x: 1, y: 2, o: ""});
-var a2 = g.Hex(1, 2, { o: "" });
-
-
-var a4 = hex2(a2);
-a4.o;
-a4.mambo;
-
-hex2(1,2, {  })
-
-g.Hex().add({ x: 1, y: 2 })
-type z = g.CubePlain;
-
-var a: Point = g.Point();
-
-a.add({ x: 1, y: 2, });
-
-var b = g.Hex({ y: 2, x: 3});
-g.Hex([3]);
-b.toCartesian({ q: 1, r: 2 })
-
+import { GameMap, Tile } from "./mapGenerator";
 
 enum Actions {
     MoveUnit = "moveUnit",
@@ -85,8 +53,28 @@ function delay(delay: number) {
 }
 
 export class Game {
+    zones = new WeakMap<Tile, Zone>();
+    players: { id: number; controller: PlayerController }[];
     
-    constructor(public map: GameMap, public players: PlayerController[]) {
+    constructor(public map: GameMap, players: PlayerController[]) {
+        this.players = players.map((player, index) => {
+            return {
+                id: index,
+                controller: player,
+            };
+        });
+
+        this.placeZones();
+    }
+
+    private placeZones() {
+        
+
+        for (const hex of this.map) {
+            hex.model.owner = this.players[0].id;
+        }
+
+        
     }
 
     async turn() {
@@ -94,7 +82,7 @@ export class Game {
 
         for (const player of this.players) {
 
-            for await (const action of listenUntil(player.getActions, Infinity)) {
+            for await (const action of listenUntil(player.controller.getActions, Infinity)) {
                 // TODO: handle user/bot actions
             }
         }
@@ -102,7 +90,11 @@ export class Game {
 }
 
 class Zone {
-    constructor(public capital: any) {
+    constructor(public capital: Hex) {
+    }
+
+    get isControllable() {
+        return true;
     }
 
     addTile(hex: any) {

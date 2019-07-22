@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:48:24 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-04 13:42:18
+ * @Last Modified time: 2019-07-22 04:49:05
  */
 
 interface TurnAction {
@@ -24,4 +24,3 @@ interface PlayerController {
     getActions(initial: TurnActionResponse): TurnContract<TurnAction>;
 }
 
-type GameMap = any;

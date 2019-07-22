@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-02-24 08:20:11
+ * @Last Modified time: 2019-07-22 06:29:17
  */
 
 import * as PIXI from "pixi.js";
@@ -25,6 +25,7 @@ export class Hex {
         };
 
         this.needUpdate = true;
+        this.lastModelVersion = -1;
     }
 
     init() {
@@ -39,26 +40,23 @@ export class Hex {
         });
         // test code
         this.view.addListener("click", (e) => {
-            const p = /m(\d)/i.exec(this.model.placement) || ["m0", "0"];
-            this.model.placement = p[1] >= 4 ? "m1" : "m" + ++p[1];
-            this.needUpdate = true;
+            const p = /m(\d)/i.exec(this.cell.model.placement) || ["m0", "0"];
+            this.cell.model.placement = p[1] >= 4 ? "m1" : "m" + ++p[1];
         });
     }
 
-    setModel(nextModel) {
-        this.model = nextModel;
-        this.needUpdate = true;
-    }
-
     update() {
+        const { model } = this.cell;
+        const modelVersion = model.getVersion();
         // TODO: maybe we need forced updates in some cases in the future
-        if (!this.needUpdate) {
+        if (!this.needUpdate && this.lastModelVersion === modelVersion) {
             return;
         }
+        this.lastModelVersion = modelVersion;
         this.needUpdate = false;
 
         const { hover } = this.state;
-        const { player, placement } = this.model;
+        const { owner, placement } = model;
         const point = this.cell.toPoint();
 
         this.view.clear();

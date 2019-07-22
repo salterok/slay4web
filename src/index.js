@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-20 03:04:24
+ * @Last Modified time: 2019-07-22 05:15:06
  */
 
 import "./patcher";
@@ -10,6 +10,7 @@ import * as PIXI from "pixi.js";
 import * as Viewport from "imports-loader?PIXI=pixi.js!pixi-viewport";
 import * as Honeycomb from "honeycomb-grid";
 import { Hex } from "./Hex";
+import { generateLevel } from "./mapGenerator";
 
 import { Game } from "./Game";
 
@@ -74,6 +75,18 @@ function setup() {
         return null;
     };
 
+    const grid = prepareMap();
+
+    const pl = {
+        async *getActions(initial) {
+            while (initial.timeLeft > 0) {
+                initial = yield { type: "some turn", time: initial.timeLeft };
+            }
+        }
+    };
+    
+    const game = new Game(grid, [pl]);
+
     const renderItems = grid.map(cell => {
         const hex = new Hex(cell, cellContentRenderer);
     
@@ -116,172 +129,31 @@ viewport
 // add the viewport to the stage
 app.stage.addChild(viewport);
 
-const HexDef = Honeycomb.extendHex({
-    size: baseSize,           // default: 1
-    orientation: "flat" // default: 'pointy'
-});
-
-const Grid = Honeycomb.defineGrid(HexDef);
-
-const REMOVED = Symbol("REMOVED");
-/**
- * 
- * @param {Honeycomb.Grid<Honeycomb.Hex<{}>>} grid 
- * @param {Honeycomb.PointLike} hex
- * @returns {Honeycomb.Hex<{}>}
- */
-function markRemoved(grid, hex) {
-    const index = grid.indexOf(hex);
-    if (index !== -1) {
-        grid[index][REMOVED] = true;
-        return grid[index];
-    }
-}
-
-function rand(max, min = 0) {
-    return min + (max * Math.random()) | 0;
-}
-
-function sample(arr) {
-    return arr[rand(arr.length)];
-}
-
-/**
- * Computes new hole size using binary partitioning based on growFactor
- * @param {number} maxLevel 
- * @param {number} growFactor 
- */
-function computeGrowLevel(maxLevel, growFactor) {
-    let min = 1;
-    let max = maxLevel;
-    while(max - min > 0) {
-        let curr = min + (max - min) / 2 | 0;
-        if (Math.random() < growFactor) {
-            min = curr;
-        }
-        else {
-            max = curr;
-        }
-    }
-    return min;
-}
-
-function markAreas(grid) {
-    let counter = new Map();
-    grid.forEach(h => {
-        // if (h.marker) {
-        //     return;
-        // }
-        const near = grid.neighborsOf(h);
-
-        const set = new Set(near.map(n => n.marker));
-        set.delete(undefined);
-        if (set.size === 0) {
-            const marker = counter.size + 1
-            const marked = [];
-            counter.set(marker, marked);
-            h.marker = marker;
-            near.forEach(n => n.marker = marker);
-
-            marked.push(h, ...near);
-        }
-        if (set.size === 1) {
-            const marker = Array.from(set)[0];
-            h.marker = marker;
-            near.forEach(n => n.marker = marker);
-
-            counter.get(marker).push(h, ...near);
-        }
-        if (set.size > 1) {
-            const groups = Array.from(set.values());
-
-            const sizes = groups.map(g => counter.get(g).length);
-            const max = Math.max(...sizes);
-            const marker = groups[sizes.indexOf(max)];
-            h.marker = marker;
-            counter.get(marker).push(h);
-            for (const group of groups.filter(g => g !== marker)) {
-                const array = counter.get(group);
-                counter.set(group, []);
-                array.forEach(h => h.marker = marker);
-                counter.get(marker).push(...array);
-            }
-        }
-    });
-}
-
-/**
- * 
- * @param {{ width: number; height: number, holes: number; maxHoleSize: number; growFactor: number; Grid: Honeycomb.GridFactory<Honeycomb.Hex<{}>>}} opts 
- */
-function generateLevel(opts) {    
-    let grid = opts.Grid.rectangle({ width: opts.width, height: opts.height });
-
-    const holes = [];
-    const checked = new Set();
-    for (let i = 0; i < opts.holes; i++) {
-        const hex = markRemoved(grid, { x: rand(opts.width), y: rand(opts.height) });
-        holes.push(hex);
-        checked.add(hex);
-    }
-
-    function growHole(hole, level) {
-        if (level === 0) {
-            return;
-        }
-        const toChoose = grid.neighborsOf(hole).filter(hex => !checked.has(hex));
-
-        const item = sample(toChoose);
-        if (item) {
-            checked.add(item);
-            markRemoved(grid, item);
-
-            growHole(item, level - 1);
-        }
-    }
-
-    for (const hole of holes) {
-        if (opts.maxHoleSize) {
-            const level = computeGrowLevel(opts.maxHoleSize, opts.growFactor);
-            console.log(opts.maxHoleSize, opts.growFactor, level)
-            growHole(hole, level);
-        }
-    }
-
-    grid = new opts.Grid([...grid.filter(hex => !hex[REMOVED])]);
-
-    markAreas(grid);
+function prepareMap() {
     
+    performance.mark("generateLevel:start");
+    const grid = generateLevel({
+        width: 20, 
+        height: 20,
+        baseSize,
+        holes: 8,
+        maxHoleSize: 20,
+        growFactor: 0.65,
+    });
+    performance.mark("generateLevel:end");
+    performance.measure("generateLevel", "generateLevel:start", "generateLevel:end");
+    
+    console.log(grid, Array.from(grid.values()));
+
+
     return grid;
 }
 
-performance.mark("generateLevel:start");
-const grid = generateLevel({
-    Grid,
-    width: 20, 
-    height: 20,
-    holes: 8,
-    maxHoleSize: 20,
-    growFactor: 0.65,
-});
-performance.mark("generateLevel:end");
-performance.measure("generateLevel", "generateLevel:start", "generateLevel:end");
 
-console.log(grid, Array.from(grid.values()));
+
 
 globalThis.Grid = Grid;
 globalThis.Honeycomb = Honeycomb;
-
-
-const pl = {
-    async *getActions(initial) {
-        while (initial.timeLeft > 0) {
-            initial = yield { type: "some turn", time: initial.timeLeft };
-        }
-    }
-};
-
-const game = new Game(grid, [pl]);
 
 
 // viewport.sortableChildren = true;
