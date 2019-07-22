@@ -102,7 +102,7 @@ declare module "honeycomb-grid" {
             (coords: [number?, number?]): Hex<T>;   
         }
 
-        interface GridProto<T> extends Array<HexPlain> {
+        interface GridProto<T> extends Array<Hex<T>> {
             get(hex: HexPlain): Hex<T>;
             set(hex: HexPlain, props: Hex<T>): this;
             hexesBetween(firstHex: HexPlain, lastHex: HexPlain): Hex<T>[];
@@ -110,21 +110,21 @@ declare module "honeycomb-grid" {
             neighborsOf(hex: HexPlain, directions?: (CompassDirection | number)[] | CompassDirection | number | "all", diagonal?: boolean): Hex<T>[];
         }
 
-        type Grid<T> = {};
+        type Grid<T = HexPlain> = GridProto<T>;
 
         interface GridFactory<T> {
             Hex: HexFactory<T>;
             isValidHex(hex: any): boolean;
             pointToHex(point: PointPlain): HexPlain;
 
-            parallelogram(options: { width?: number, height?: number, start?: HexPlain, direction?: number, onCreate?: (hex: Hex<T>) => void }): Grid<T>;
-            triangle(options: { size?: number, start?: HexPlain, direction?: number, onCreate?: (hex: Hex<T>) => void }): Grid<T>;
-            hexagon(options: { radius?: number, center?: HexPlain, direction?: number, onCreate?: (hex: Hex<T>) => void }): Grid<T>;
-            rectangle(options: { width?: number, height?: number, start?: HexPlain, direction?: CompassDirection | number, onCreate?: (hex: Hex<T>) => void }): Grid<T>;
+            parallelogram(options: { width?: number, height?: number, start?: HexPlain, direction?: number, onCreate?: (hex: Hex<T>) => void }): Grid<Hex<T>>;
+            triangle(options: { size?: number, start?: HexPlain, direction?: number, onCreate?: (hex: Hex<T>) => void }): Grid<Hex<T>>;
+            hexagon(options: { radius?: number, center?: HexPlain, direction?: number, onCreate?: (hex: Hex<T>) => void }): Grid<Hex<T>>;
+            rectangle(options: { width?: number, height?: number, start?: HexPlain, direction?: CompassDirection | number, onCreate?: (hex: Hex<T>) => void }): Grid<Hex<T>>;
 
-            (...hexes: Hex[]): Grid<T>;
-            (hexes: Hex[]): Grid<T>;
-            (grid: Grid<T>): Grid<T>;
+            (...hexes: Hex[]): Grid<Hex<T>>;
+            (hexes: Hex[]): Grid<Hex<T>>;
+            (grid: Grid<T>): Grid<Hex<T>>;
         }
 
         var Hex: HexFactory<{}>;
