@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-22 05:15:06
+ * @Last Modified time: 2019-07-25 07:48:40
  */
 
 import "./patcher";
@@ -86,6 +86,10 @@ function setup() {
     };
     
     const game = new Game(grid, [pl]);
+
+    Hex.prototype.__debugFn = (inst) => {
+        return inst.cell.model.owner;
+    }
 
     const renderItems = grid.map(cell => {
         const hex = new Hex(cell, cellContentRenderer);

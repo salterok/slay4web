@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-22 06:29:17
+ * @Last Modified time: 2019-07-25 07:48:22
  */
 
 import * as PIXI from "pixi.js";
@@ -33,10 +33,12 @@ export class Hex {
         this.view.addListener("mouseover", () => {
             this.state.hover = true;
             this.needUpdate = true;
+            console.log("mouseover", this.cell.toPoint())
         });
         this.view.addListener("mouseout", () => {
             this.state.hover = false;
             this.needUpdate = true;
+            console.log("mouseout", this.cell.toPoint())
         });
         // test code
         this.view.addListener("click", (e) => {
@@ -102,16 +104,18 @@ export class Hex {
             }
         }
 
-        if (this.cell.marker) {
-            if (!this.text) {
-                this.text = new PIXI.Text(this.cell.marker, { fontFamily : "Arial", fontSize: 24, fill : 0xff1010, align : "center" });
+        if (this.__debugFn) {
+            const str = this.__debugFn(this);
+
+            if (!this._debugText) {
+                this._debugText = new PIXI.Text(str, { fontFamily : "Arial", fontSize: 24, fill : 0xff1010, align : "center" });
             }
             
             const center = this.cell.center();
-            this.text.x = point.x + center.x;
-            this.text.y = point.y + center.y;
-            this.text.anchor.set(0.5);
-            this.view.addChild(this.text);
+            this._debugText.x = point.x + center.x;
+            this._debugText.y = point.y + center.y;
+            this._debugText.anchor.set(0.5);
+            this.view.addChild(this._debugText);
         }
     }
     
