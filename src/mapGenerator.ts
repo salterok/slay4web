@@ -2,10 +2,12 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-20 03:09:02 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-22 06:28:24
+ * @Last Modified time: 2019-07-31 04:45:43
  */
 
 import * as Honeycomb from "honeycomb-grid";
+import { rand, sample } from "./utils";
+import { groupHexes, buildFastNeighbors } from "./Map/utils";
 
 type InternalHex = Honeycomb.Hex<{marker: number}>;
 
@@ -17,6 +19,9 @@ export class Tile {
 
     owner = 0;
     placement = "";
+    isCapital = false;
+
+    getOwnerInfo(): any { return {}; } // this will be sustituted by actual implementation from Game.js
 
     getVersion() {
         return this[versionKey];
@@ -54,14 +59,6 @@ function markRemoved(grid: Honeycomb.Grid, hex: Honeycomb.HexPlain) {
         removedHexes.add(grid[index]);
         return grid[index];
     }
-}
-
-function rand(max: number, min = 0) {
-    return min + (max * Math.random()) | 0;
-}
-
-function sample<T>(arr: T[]): T {
-    return arr[rand(arr.length)];
 }
 
 /**
@@ -205,7 +202,14 @@ export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
 
     grid = Grid([...grid.filter(hex => !removedHexes.has(hex))]);
 
-    markAreas(grid as any);
+    // for testing purpose
+    globalThis.Grid = Honeycomb.Grid;
+    globalThis.Honeycomb = Honeycomb;
+
+    buildFastNeighbors(grid);
+
+    // TODO: check if all hexes makes one cluster
+    // groupHexes(grid, grid);
     
     return grid;
 }
