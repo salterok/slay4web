@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-25 07:48:40
+ * @Last Modified time: 2019-07-31 04:00:16
  */
 
 import "./patcher";
@@ -70,6 +70,8 @@ function setup() {
                 return new PIXI.Sprite(m3);
             case "m4":
                 return new PIXI.Sprite(m4);
+            case "capital":
+                return new PIXI.Sprite(capital);
         }
         // TODO: return NO_TEXTURE
         return null;
@@ -84,8 +86,15 @@ function setup() {
             }
         }
     };
+    const bot = {
+        async *getActions(initial) {
+            while (initial.timeLeft > 0) {
+                initial = yield { type: "some turn", time: initial.timeLeft };
+            }
+        }
+    }
     
-    const game = new Game(grid, [pl]);
+    const game = new Game(grid, [pl, bot, bot, bot, bot]);
 
     Hex.prototype.__debugFn = (inst) => {
         return inst.cell.model.owner;
@@ -152,13 +161,6 @@ function prepareMap() {
 
     return grid;
 }
-
-
-
-
-globalThis.Grid = Grid;
-globalThis.Honeycomb = Honeycomb;
-
 
 // viewport.sortableChildren = true;
 

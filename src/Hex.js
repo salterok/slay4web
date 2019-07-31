@@ -2,12 +2,13 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-25 07:48:22
+ * @Last Modified time: 2019-07-31 04:49:41
  */
 
 import * as PIXI from "pixi.js";
 
 const TypeField = Symbol();
+const BuildingField = Symbol();
 
 export class Hex {
     constructor(cell, renderer) {
@@ -33,12 +34,12 @@ export class Hex {
         this.view.addListener("mouseover", () => {
             this.state.hover = true;
             this.needUpdate = true;
-            console.log("mouseover", this.cell.toPoint())
+            // console.log("mouseover", this.cell.toPoint())
         });
         this.view.addListener("mouseout", () => {
             this.state.hover = false;
             this.needUpdate = true;
-            console.log("mouseout", this.cell.toPoint())
+            // console.log("mouseout", this.cell.toPoint())
         });
         // test code
         this.view.addListener("click", (e) => {
@@ -58,7 +59,7 @@ export class Hex {
         this.needUpdate = false;
 
         const { hover } = this.state;
-        const { owner, placement } = model;
+        const { owner, placement, isCapital } = model;
         const point = this.cell.toPoint();
 
         this.view.clear();
@@ -70,9 +71,12 @@ export class Hex {
         else {
             this.view.lineStyle(1, 0x999999);
         }
+
+
+        const ownerInfo = model.getOwnerInfo();
         
         // landType[player].color
-        this.view.beginFill(0x95db24);
+        this.view.beginFill(ownerInfo.color);
         
 
         const corners = this.cell.corners().map(corner => corner.add(point));
@@ -86,7 +90,27 @@ export class Hex {
         // finish at the first corner
         this.view.lineTo(firstCorner.x, firstCorner.y);
 
-        let child = this.view.getChildByName("placement");
+        const building = isCapital ? "capital" : undefined;
+
+        let child = this.view.getChildByName("building");
+        if (!child || child[BuildingField] !== building) {
+            if (child) {
+                this.view.removeChild(child);
+            }
+            child = this.renderer(building);
+            if (child) {
+                child.name = "building";
+                child[BuildingField] = building;
+
+                const center = this.cell.center();
+                child.x = point.x + center.x;
+                child.y = point.y + center.y;
+                child.anchor.set(0.5);
+                this.view.addChild(child);
+            }
+        }
+
+        child = this.view.getChildByName("placement");
         if (!child || child[TypeField] !== placement) {
             if (child) {
                 this.view.removeChild(child);
