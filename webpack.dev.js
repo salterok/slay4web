@@ -30,6 +30,11 @@ module.exports = {
 		rules: [
 			{
 				test: /\.js$/,
+				use: ["source-map-loader"],
+				enforce: "pre"
+			},
+			{
+				test: /\.js$/,
 				include: [path.resolve(__dirname, 'src')],
 				loader: 'babel-loader',
 
@@ -72,7 +77,7 @@ module.exports = {
 		]
 	},
 	resolve: {
-		extensions: [ '.tsx', '.ts', '.js' ]
+		extensions: ['.tsx', '.ts', '.js']
 	},
 
 	devServer: {

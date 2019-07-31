@@ -22,6 +22,7 @@
         "imports-loader": "^0.8.0",
         "node-sass": "^4.11.0",
         "sass-loader": "^7.1.0",
+        "source-map-loader": "^0.2.4",
         "style-loader": "^0.23.1",
         "ts-loader": "^6.0.4",
         "typescript": "^3.5.2",
