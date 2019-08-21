@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-31 04:00:16
+ * @Last Modified time: 2019-08-21 15:12:31
  */
 
 import "./patcher";
@@ -14,15 +14,19 @@ import { generateLevel } from "./mapGenerator";
 
 import { Game } from "./Game";
 
-const width = window.innerWidth;
-const height = window.innerHeight;
+
+const gameContainer = document.getElementById("game-container");
+
+const width = gameContainer.clientWidth;
+const height = gameContainer.clientHeight;
 const baseSize = 30;
 
 const app = new PIXI.Application({
     width: width,
     height: height,
 });
-document.body.appendChild(app.view);
+
+gameContainer.appendChild(app.view);
 
 const loader = new PIXI.Loader();
 
@@ -77,24 +81,112 @@ function setup() {
         return null;
     };
 
+    function setupCursors() {
+
+        const cursor = new PIXI.Sprite();
+        cursor.anchor = {x: 0.35, y: 0.25}; // position specific to where the actual cursor point is
+        app.stage.addChild(cursor);
+
+        cursor.texture = m1;
+
+        const interaction = app.renderer.plugins.interaction;
+
+        interaction.on("pointerover", () => {
+            cursor.visible = true;
+        });
+        interaction.on("pointerout", () => {
+            cursor.visible = false;
+        });
+        interaction.on("pointermove", (event) => {
+            cursor.position = event.data.global;
+        });
+
+        let i = 0;
+        setInterval(() => {
+            cursor.texture = [m1, m2, m3, m4][i++ % 4];
+        }, 2000)
+        app.cursor = "default";
+
+        // console.log(dataUrl)
+    }
+
+    setupCursors();
+
     const grid = prepareMap();
+
+    class ActionListener {
+        
+
+        constructor() {
+            this.isActive = false;
+            const that = this;
+            this._emitter = {
+                get active() {
+                    return that.isActive;
+                },
+
+                emit(type, data) {
+                    if (this.active) {
+                        that._handles.res({ type, data });
+                        that._handles = undefined;
+                        that._activeHandle = undefined;
+                    }
+                }
+            }
+        }
+
+        get handle() {
+            return this._emitter;
+        }
+
+        waitForAction() {
+            if (!this._activeHandle) {
+                this._activeHandle = new Promise((res, rej) => {
+                    this._handles = { res, rej };
+                });
+            }
+
+            return this._activeHandle;
+        }
+    }
+
+    const listener = new ActionListener();
+
+    document.querySelector(".units").addEventListener("click", (e) => {
+        listener.handle.emit(e.target.dataset["action"]);
+    });
 
     const pl = {
         async *getActions(initial) {
-            while (initial.timeLeft > 0) {
-                initial = yield { type: "some turn", time: initial.timeLeft };
+            listener.isActive = true;
+            try {
+                while (initial.timeLeft > 0) {
+                    const action = await listener.waitForAction();
+
+                    initial = yield action;
+                }
+            }
+            finally {
+                listener.isActive = false;
             }
         }
     };
     const bot = {
         async *getActions(initial) {
             while (initial.timeLeft > 0) {
-                initial = yield { type: "some turn", time: initial.timeLeft };
+                return yield new Promise((res) => setTimeout(res, 40));
+                // initial = yield { type: "some turn", time: initial.timeLeft };
             }
         }
     }
     
     const game = new Game(grid, [pl, bot, bot, bot, bot]);
+
+    // setInterval(async () => {
+    //     await game.turn();
+    // }, 400)
+
+    game.turn();
 
     Hex.prototype.__debugFn = (inst) => {
         return inst.cell.model.owner;

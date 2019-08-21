@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-25 11:07:29
+ * @Last Modified time: 2019-08-21 15:10:50
  */
 
 import * as PIXI from "pixi.js";
@@ -32,14 +32,19 @@ async function* listenUntil(iterFactory: TurnContractFactory, timeLimit: number)
         timePassed = Date.now() - startTime;
         const action = await Promise.race([
             iter.next({ timeLeft: timeLimit }),
-            delay(timeLimit - timePassed).then(() => CANCELLED),
+            delay(timeLimit - timePassed).then(() => ({ done: true, value: CANCELLED })),
         ]);
 
-        if (action === CANCELLED) {
+        if (action.value === CANCELLED) {
+            iter.throw(CANCELLED);
             return;
         }
 
-        yield action;
+        yield action.value;
+
+        if (action.done) {
+            return;
+        }
     }
     while (true);
 }
@@ -47,6 +52,9 @@ async function* listenUntil(iterFactory: TurnContractFactory, timeLimit: number)
 function delay(delay: number) {
     if (delay <= 0) {
         return Promise.resolve();
+    }
+    if (delay === Infinity) {
+        return new Promise(() => {});
     }
     return new Promise((resolve) => {
         setTimeout(resolve, delay);
@@ -122,17 +130,37 @@ export class Game {
                 }
             }
         }
-
         
     }
 
     async turn() {
-
+        console.log("this.players", this.players)
 
         for (const player of this.players) {
+            let selectedUnit = 0;
 
             for await (const action of listenUntil(player.controller.getActions, Infinity)) {
                 // TODO: handle user/bot actions
+
+                await delay(50);
+
+
+
+                console.log("boom", action);
+
+                switch (action.type) {
+                    case "CREATE_UNIT":
+                    case "CREATE_BUILDING":
+                    case "PLACE_UNIT":
+                    case "SELECT_UNIT":
+                        selectedUnit++;
+
+                        
+
+                        break;
+                    default:
+                        console.warn("unknown action", action);
+                }
             }
         }
     }
