@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-08-21 15:10:50
+ * @Last Modified time: 2019-08-30 19:14:06
  */
 
 import * as PIXI from "pixi.js";
@@ -18,12 +18,8 @@ enum Actions {
 };
 
 const CANCELLED = Symbol("Cancelled");
-/**
- * @param {TurnContractFactory} iterFactory 
- * @param {number} timeLimit 
- * @returns {AsyncIterableIterator<TurnAction>}
- */
-async function* listenUntil(iterFactory: TurnContractFactory, timeLimit: number) {
+
+async function* listenUntil(iterFactory: TurnContractFactory, timeLimit: number): AsyncIterableIterator<TurnAction> {
     const startTime = Date.now();
     let timePassed = 0;
     const iter = iterFactory({ timeLeft: timeLimit });
@@ -35,7 +31,7 @@ async function* listenUntil(iterFactory: TurnContractFactory, timeLimit: number)
             delay(timeLimit - timePassed).then(() => ({ done: true, value: CANCELLED })),
         ]);
 
-        if (action.value === CANCELLED) {
+        if (typeof action.value == "symbol") {
             iter.throw(CANCELLED);
             return;
         }
@@ -153,9 +149,9 @@ export class Game {
                     case "CREATE_BUILDING":
                     case "PLACE_UNIT":
                     case "SELECT_UNIT":
-                        selectedUnit++;
+                        selectedUnit = (selectedUnit + 1) % 4;
 
-                        
+                        player.controller.postChanges("unitSelected", `m${selectedUnit}`);
 
                         break;
                     default:

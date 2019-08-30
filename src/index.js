@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 21:38:49 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-08-21 15:12:31
+ * @Last Modified time: 2019-08-30 19:14:55
  */
 
 import "./patcher";
@@ -84,7 +84,7 @@ function setup() {
     function setupCursors() {
 
         const cursor = new PIXI.Sprite();
-        cursor.anchor = {x: 0.35, y: 0.25}; // position specific to where the actual cursor point is
+        cursor.anchor = {x: 0.5, y: 0.5};
         app.stage.addChild(cursor);
 
         cursor.texture = m1;
@@ -101,16 +101,24 @@ function setup() {
             cursor.position = event.data.global;
         });
 
-        let i = 0;
-        setInterval(() => {
-            cursor.texture = [m1, m2, m3, m4][i++ % 4];
-        }, 2000)
-        app.cursor = "default";
+        const cursorTypes = { m1, m2, m3, m4, fort };
 
-        // console.log(dataUrl)
+        function changeCursor(type) {
+            const nextCursor = cursorTypes[type];
+            if (nextCursor) {
+                app.view.style.cursor = "none";
+                cursor.texture = nextCursor;
+                cursor.visible = true;
+            }
+            else {
+                app.view.style.cursor = "inherit";
+                cursor.visible = false;
+            }
+        }
+        return changeCursor;
     }
 
-    setupCursors();
+    const changeCursor = setupCursors();
 
     const grid = prepareMap();
 
@@ -139,6 +147,10 @@ function setup() {
             return this._emitter;
         }
 
+        reactStateChanged(listener) {
+            this._listener = listener;
+        }
+
         waitForAction() {
             if (!this._activeHandle) {
                 this._activeHandle = new Promise((res, rej) => {
@@ -152,11 +164,22 @@ function setup() {
 
     const listener = new ActionListener();
 
+    listener.reactStateChanged((type, data) => {
+        switch (type) {
+            case "unitSelected":
+                changeCursor(data);
+                return;
+        }
+    });
+
     document.querySelector(".units").addEventListener("click", (e) => {
         listener.handle.emit(e.target.dataset["action"]);
     });
 
     const pl = {
+        postChanges(type, data) {
+            listener._listener(type, data);
+        },
         async *getActions(initial) {
             listener.isActive = true;
             try {
@@ -172,6 +195,9 @@ function setup() {
         }
     };
     const bot = {
+        postChanges(type, data) {
+            
+        },
         async *getActions(initial) {
             while (initial.timeLeft > 0) {
                 return yield new Promise((res) => setTimeout(res, 40));
