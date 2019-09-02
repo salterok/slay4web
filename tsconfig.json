@@ -5,6 +5,8 @@
         "module": "es2015",
         "target": "es2018",
         "allowJs": true,
+        // "checkJs": true,
+        "jsx": "react",
 
         "sourceMap": true,
         "typeRoots": [
@@ -13,5 +15,8 @@
     },
     "include": [
         "src"
+    ],
+    "exclude": [
+        "node_modules"
     ]
 }

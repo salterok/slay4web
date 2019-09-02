@@ -34,8 +34,32 @@ module.exports = {
 				enforce: "pre"
 			},
 			{
+				test: /\.jsx$/,
+				include: [path.resolve(__dirname, 'src')],
+				exclude: /node_modules/,
+				loader: 'babel-loader',
+
+				options: {
+					plugins: ['syntax-dynamic-import'],
+
+					presets: [
+						[
+							'@babel/preset-env',
+							{
+								targets: {
+									"chrome": "75",
+								},
+								modules: false
+							}
+						],
+						"@babel/preset-react",
+					]
+				},
+			},
+			{
 				test: /\.js$/,
 				include: [path.resolve(__dirname, 'src')],
+				exclude: /node_modules/,
 				loader: 'babel-loader',
 
 				options: {
@@ -57,6 +81,7 @@ module.exports = {
 			{
 				test: /\.tsx?$/,
 				include: [path.resolve(__dirname, 'src')],
+				exclude: /node_modules/,
 				loader: 'ts-loader',
 				options: {
 					experimentalWatchApi: true,
@@ -80,7 +105,7 @@ module.exports = {
 		]
 	},
 	resolve: {
-		extensions: ['.tsx', '.ts', '.js']
+		extensions: ['.tsx', '.ts', '.js', '.jsx']
 	},
 
 	devServer: {
