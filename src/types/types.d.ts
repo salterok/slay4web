@@ -2,14 +2,17 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:48:24 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-08-30 19:11:32
+ * @Last Modified time: 2019-09-05 19:44:04
  */
 
 interface TurnAction {
     type: string;
+    data: any;
+    result: any;
 }
 
-interface TurnActionResponse {
+type TurnActionResponse = any;
+interface TurnActionInitializer {
     timeLeft: number;
 }
 
@@ -18,10 +21,10 @@ interface TurnContract<T, R = TurnActionResponse> extends AsyncIterator<T> {
 
 }
 
-type TurnContractFactory = (initial: TurnActionResponse) => TurnContract<TurnAction>;
+type TurnContractFactory = (initial: TurnActionInitializer) => TurnContract<TurnAction>;
 
 interface PlayerController {
     postChanges(type: string, data: any): void;
-    getActions(initial: TurnActionResponse): TurnContract<TurnAction>;
+    getActions(initial: TurnActionInitializer): TurnContract<TurnAction>;
 }
 

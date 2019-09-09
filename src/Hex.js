@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-19 16:48:26 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-31 04:49:41
+ * @Last Modified time: 2019-09-09 18:47:39
  */
 
 import * as PIXI from "pixi.js";
@@ -11,9 +11,13 @@ const TypeField = Symbol();
 const BuildingField = Symbol();
 
 export class Hex {
-    constructor(cell, renderer) {
+    constructor(stateX, cell, renderer) {
         const graphics = new PIXI.Graphics();
+
+        graphics.__wrapperInst = this;
+
         graphics.interactive = true;
+        this.stateX = stateX;
         this.view = graphics;
         this.cell = cell;
         this.renderer = renderer;
@@ -42,15 +46,15 @@ export class Hex {
             // console.log("mouseout", this.cell.toPoint())
         });
         // test code
-        this.view.addListener("click", (e) => {
-            const p = /m(\d)/i.exec(this.cell.model.placement) || ["m0", "0"];
-            this.cell.model.placement = p[1] >= 4 ? "m1" : "m" + ++p[1];
-        });
+        // this.view.addListener("click", (e) => {
+        //     const p = /m(\d)/i.exec(this.cell.model.placement) || ["m0", "0"];
+        //     this.cell.model.placement = p[1] >= 4 ? "m1" : "m" + ++p[1];
+        // });
     }
 
     update() {
         const { model } = this.cell;
-        const modelVersion = model.getVersion();
+        const modelVersion = this.stateX.versionOf(this.cell);
         // TODO: maybe we need forced updates in some cases in the future
         if (!this.needUpdate && this.lastModelVersion === modelVersion) {
             return;

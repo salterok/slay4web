@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-20 03:09:02 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-07-31 04:45:43
+ * @Last Modified time: 2019-09-04 17:29:51
  */
 
 import * as Honeycomb from "honeycomb-grid";
@@ -13,41 +13,12 @@ type InternalHex = Honeycomb.Hex<{marker: number}>;
 
 const removedHexes = new Set<Honeycomb.Hex>();
 
-const versionKey = Symbol("version");
 export class Tile {
-    [versionKey] = 0;
-
     owner = 0;
     placement = "";
     isCapital = false;
 
-    getOwnerInfo(): any { return {}; } // this will be sustituted by actual implementation from Game.js
-
-    getVersion() {
-        return this[versionKey];
-    }
-}
-
-
-function onPropChange<T extends { [name: string]: any }>(obj: T, propNames: (keyof T)[], fn: (propName: string, prev: unknown, next: unknown) => void) {
-    const shadowPropsKey = Symbol("shadowProps");
-    const shadowProps: { [name:string]: any } = {};
-    (obj as any)[shadowPropsKey] = shadowProps;
-    const overrideProps: { [name: string]: PropertyDescriptor } = {};
-    for (const propName of propNames as string[]) {
-        shadowProps[propName] = obj[propName];
-        overrideProps[propName] = {
-            configurable: true,
-            enumerable: false,
-            get() {
-                return shadowProps[propName];
-            },
-            set(value) {
-                fn(propName, shadowProps[propName], shadowProps[propName] = value);
-            },
-        }
-    }
-    Object.defineProperties(obj, overrideProps);
+    getOwnerInfo(): any { return {}; } // this will be substituted by actual implementation from Game.js
 }
 
 export type GameHex = Honeycomb.Hex<{ marker: number; model: Tile; }>;
@@ -134,35 +105,10 @@ interface GenLevelOpts {
     growFactor?: number;
 }
 
-const data = new WeakMap<Honeycomb.Hex, Tile>();
-
-function makeTile() {
-    const tile = new Tile();
-    onPropChange(tile, ["owner", "placement"], () => {
-        tile[versionKey]++;
-    });
-
-    return tile;
-}
-
 export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
     const HexDef = Honeycomb.extendHex({
         size: opts.baseSize,           // default: 1
         orientation: "flat", // default: 'pointy'
-
-        // get model() {
-        //     return data.get(this) || data.set(this, makeTile()).get(this);
-        // }
-    });
-
-    // this hack here because extendHex use Object.assign to extend prototype
-    // so model getter becomes a regular field and all hexes share the same one
-    Object.defineProperty(Object.getPrototypeOf(HexDef()), "model", {
-        configurable: false,
-        enumerable: false,
-        get() {
-            return data.get(this) || data.set(this, makeTile()).get(this);
-        }
     });
 
     const Grid = Honeycomb.defineGrid(HexDef);

@@ -3,6 +3,7 @@ import * as React from "react"
 import { Game } from "../Game";
 import { prepareGameEnvironment } from "./envPrepare";
 import UserActionContext from "./UserActionContext";
+import { Hex } from "../Hex";
 
 export class GameHolder extends React.Component {
 
@@ -10,13 +11,23 @@ export class GameHolder extends React.Component {
         const gameContainer = document.getElementById("game-container");
 
 
-        const { app, changeCursor, grid } = await prepareGameEnvironment(gameContainer);
+
+        const { app, viewport, changeCursor, grid, state } = await prepareGameEnvironment(gameContainer);
 
         gameContainer.appendChild(app.view);
 
         app.ticker.start();
 
-        const listener = this.context;
+        const listener = this.context;      
+
+        viewport.on("click", (e) => {
+            if (e.target.__wrapperInst instanceof Hex) {
+                listener.handle.emit("CLICK_ON_HEX", e.target.__wrapperInst.cell.coordinates());
+            }
+            else {
+                listener.handle.emit("RESET_SELECTION");
+            }
+        });
     
         listener.reactStateChanged((type, data) => {
             switch (type) {
@@ -36,7 +47,7 @@ export class GameHolder extends React.Component {
                     while (initial.timeLeft > 0) {
                         const action = await listener.waitForAction();
     
-                        initial = yield action;
+                        const result = yield action;
                     }
                 }
                 finally {
@@ -50,19 +61,23 @@ export class GameHolder extends React.Component {
             },
             async *getActions(initial) {
                 while (initial.timeLeft > 0) {
-                    return yield new Promise((res) => setTimeout(res, 40));
+                    yield new Promise((res) => setTimeout(res, 40, { type: "ZZ"}));
+                    break;
                     // initial = yield { type: "some turn", time: initial.timeLeft };
                 }
             }
         }
         
-        const game = new Game(grid, [pl, bot, bot, bot, bot]);
+        const game = new Game(grid, state, [pl, bot, bot, bot, bot]);
     
         // setInterval(async () => {
         //     await game.turn();
         // }, 400)
     
-        game.turn();
+        setTimeout(() => {
+            console.clear();
+            game.turn();
+        }, 1500);
 
     }
 

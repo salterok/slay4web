@@ -4,6 +4,7 @@ import { Viewport } from "pixi-viewport";
 import { Hex } from "../Hex";
 import { pick } from "../utils";
 import { generateLevel } from "../mapGenerator";
+import { createState } from "../core/State/Manager";
 
 export function prepareGameEnvironment(gameContainer) {
     const width = gameContainer.clientWidth;
@@ -58,9 +59,11 @@ export function prepareGameEnvironment(gameContainer) {
                 }
                 return new PIXI.Sprite(texture);
             };
+
+            const state = createState();
         
             const renderItems = grid.map(cell => {
-                const hex = new Hex(cell, cellContentRenderer);
+                const hex = new Hex(state, cell, cellContentRenderer);
             
                 hex.init();
             
@@ -77,10 +80,24 @@ export function prepareGameEnvironment(gameContainer) {
 
             const changeCursor = setupCursors(app, pick(textures, "m1", "m2", "m3", "m4", "fort"));
 
+            const HexDef = Object.getPrototypeOf(grid[0]);
+
+            // this hack here because extendHex use Object.assign to extend prototype
+            // so model getter becomes a regular field and all hexes share the same one
+            Object.defineProperty(HexDef, "model", {
+                configurable: false,
+                enumerable: false,
+                get() {
+                    return state.get(this);
+                }
+            });
+
     
             return res({
                 app,
+                viewport,
                 grid,
+                state,
                 changeCursor,
             });
         });
@@ -135,13 +152,6 @@ function setupCursors(app, cursorTypes) {
     app.stage.addChild(cursor);
 
     const interaction = app.renderer.plugins.interaction;
-
-    interaction.on("pointerover", () => {
-        cursor.visible = true;
-    });
-    interaction.on("pointerout", () => {
-        cursor.visible = false;
-    });
     interaction.on("pointermove", (event) => {
         cursor.position = event.data.global;
     });

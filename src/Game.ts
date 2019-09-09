@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-08-30 19:14:06
+ * @Last Modified time: 2019-09-05 20:18:03
  */
 
 import * as PIXI from "pixi.js";
@@ -11,6 +11,7 @@ import * as g from "honeycomb-grid";
 import { GameMap, Tile, GameHex } from "./mapGenerator";
 import { sample } from "./utils";
 import { groupHexes } from "./Map/utils";
+import { createState } from "./core/State/Manager";
 
 enum Actions {
     MoveUnit = "moveUnit",
@@ -24,23 +25,25 @@ async function* listenUntil(iterFactory: TurnContractFactory, timeLimit: number)
     let timePassed = 0;
     const iter = iterFactory({ timeLeft: timeLimit });
 
+    let prevResult: TurnAction;
+
     do {
         timePassed = Date.now() - startTime;
-        const action = await Promise.race([
-            iter.next({ timeLeft: timeLimit }),
+        const step = await Promise.race([
+            iter.next(prevResult),
             delay(timeLimit - timePassed).then(() => ({ done: true, value: CANCELLED })),
         ]);
 
-        if (typeof action.value == "symbol") {
-            iter.throw(CANCELLED);
+        if (typeof step.value == "symbol") {
+            return;
+        }
+        
+        if (step.done) {
             return;
         }
 
-        yield action.value;
-
-        if (action.done) {
-            return;
-        }
+        yield step.value;
+        prevResult = step.value.result;
     }
     while (true);
 }
@@ -61,7 +64,7 @@ export class Game {
     zones = new WeakMap<GameHex, Zone>();
     players: { id: number; controller: PlayerController }[];
     
-    constructor(public map: GameMap, players: PlayerController[]) {
+    constructor(public map: GameMap, private state: ReturnType<typeof createState>, players: PlayerController[]) {
         let colors = [0xec5c5c, 0xecba5c, 0xdbec5c, 0x7eec5c, 0x5cdeec, 0x5c94ec, 0x875cec, 0xd75cec, 0xec5c89];
         let preparedPlayers = this.players = players.map((player, index) => {
             return {
@@ -134,30 +137,73 @@ export class Game {
 
         for (const player of this.players) {
             let selectedUnit = 0;
+            let selectedBuilding = "";
 
-            for await (const action of listenUntil(player.controller.getActions, Infinity)) {
+            const session = this.state.beginSession();
+            
+            for await (const action of listenUntil(player.controller.getActions, 5000)) {
                 // TODO: handle user/bot actions
 
                 await delay(50);
 
-
+                
 
                 console.log("boom", action);
 
                 switch (action.type) {
-                    case "CREATE_UNIT":
-                    case "CREATE_BUILDING":
-                    case "PLACE_UNIT":
-                    case "SELECT_UNIT":
-                        selectedUnit = (selectedUnit + 1) % 4;
+                    case "RESET_SELECTION":
+                        selectedBuilding = "";
+                        selectedUnit = 0;
+                        player.controller.postChanges("updateCursor", null);
+                        break;
+                    case "CLICK_ON_HEX":
+                        const cell = this.map.get(action.data);
+                        
+                        if (selectedUnit) {
+                            if (cell.model.owner === player.id) {
+                                
+                            }
+                            cell.model.placement = `m${selectedUnit}`;
+                            selectedUnit = 0;
+                            player.controller.postChanges("updateCursor", null);
+                            session.checkpoint();
+                        }
+                        if (selectedBuilding) {
+                            if (cell.model.owner === player.id) {
+                                cell.model.placement = selectedBuilding;
+                            }
+                            selectedBuilding = "";
+                            player.controller.postChanges("updateCursor", null);
+                            session.checkpoint();
+                        }
 
-                        player.controller.postChanges("unitSelected", `m${selectedUnit}`);
+                        action.result = {some: 2};
+                        break;
+                    case "PLACE_UNIT":
+                        break;
+                    case "SELECT_UNIT":
+                        break;
+                    case "CREATE_BUILDING":
+                        selectedBuilding = "fort";
+                        selectedUnit = 0;
+                        player.controller.postChanges("updateCursor", `fort`);
+                        break;
+                    case "CREATE_UNIT":
+                        selectedBuilding = "";
+                        if (selectedUnit < 4) {
+                            selectedUnit++;
+                            player.controller.postChanges("updateCursor", `m${selectedUnit}`);
+                        }
 
                         break;
                     default:
                         console.warn("unknown action", action);
                 }
             }
+
+            session.reset();
+
+            // session.applySession();
         }
     }
 }
