@@ -5,6 +5,7 @@ import { Hex } from "../Hex";
 import { pick } from "../utils";
 import { generateLevel } from "../mapGenerator";
 import { createState } from "../core/State/Manager";
+import code from "text-loader!../hex.glsl";
 
 export function prepareGameEnvironment(gameContainer) {
     const width = gameContainer.clientWidth;
@@ -33,6 +34,11 @@ export function prepareGameEnvironment(gameContainer) {
 
         interaction: app.renderer.plugins.interaction // the interaction module is important for wheel() to work properly when renderer.view is placed or scaled
     });
+
+    
+    
+    const shader = new PIXI.Filter("", code, { corners: [] }); // this.cell.corners()
+    app.stage.filters = [shader];
 
     viewport
         .drag()
