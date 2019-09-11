@@ -2,16 +2,14 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-05 20:18:03
+ * @Last Modified time: 2019-09-11 19:37:32
  */
 
 import * as PIXI from "pixi.js";
 import "honeycomb-grid";
-import * as g from "honeycomb-grid";
-import { GameMap, Tile, GameHex } from "./mapGenerator";
-import { sample } from "./utils";
-import { groupHexes } from "./Map/utils";
+import { Tile, GameHex } from "./core/Map/mapGenerator";
 import { createState } from "./core/State/Manager";
+import { GameMap } from "./core/GameMap";
 
 enum Actions {
     MoveUnit = "moveUnit",
@@ -61,7 +59,6 @@ function delay(delay: number) {
 }
 
 export class Game {
-    zones = new WeakMap<GameHex, Zone>();
     players: { id: number; controller: PlayerController }[];
     
     constructor(public map: GameMap, private state: ReturnType<typeof createState>, players: PlayerController[]) {
@@ -78,59 +75,10 @@ export class Game {
             return preparedPlayers.find(p => p.id === this.owner) || {};
         }
 
-        this.placeZones();
+        this.map.placeZones(preparedPlayers.map(p => p.id));
     }
 
-    private placeZones() {
-        const startingZoneCount = 3;
-        const numPlayers = this.players.length;
-
-        const zonesToReserve = numPlayers * startingZoneCount;
-
-        const posiblePlaces = new Map<number, GameHex[]>(this.players.map((p, i) => ([i, [] ])))
-        const choosedZones = new Map<number, Zone[]>(this.players.map((p, i) => ([i, [] ])))
-
-        for (const hex of this.map) {
-            hex.model.owner = sample(this.players).id;
-
-            posiblePlaces.get(hex.model.owner).push(hex);
-        }
-
-
-        for (const player of this.players) {
-            for (let i = 0; i < startingZoneCount; i++) {
-                const places = posiblePlaces.get(player.id);
-                const groups = groupHexes(this.map, places);
-
-                groups.sort((g1, g2) => g2.length - g1.length);
-
-                let choosedGroup = groups.find(g => g.length >= 2);
-
-                // TODO: find the most distant starting zones for same player
-
-                if (!choosedGroup) {
-                    console.warn(`Can't find starting zone for player ${player.id} at itter ${i}`);
-                }
-
-                if (choosedGroup) {
-                    posiblePlaces.set(player.id, places.filter(pl => !choosedGroup.includes(pl)));
-
-                    // TODO: select better place for capital
-                    // probably one thaat not far away from weighted center of zone but close to edge
-
-                    const zone = new Zone(choosedGroup[0]);
-
-                    choosedGroup.slice(1).forEach(hex => {
-                        this.zones.set(hex, zone);
-                        zone.addTile(hex)
-                    });
-
-                    choosedZones.get(player.id).push(zone);
-                }
-            }
-        }
-        
-    }
+    
 
     async turn() {
         console.log("this.players", this.players)
@@ -140,7 +88,7 @@ export class Game {
             let selectedBuilding = "";
 
             const session = this.state.beginSession();
-            
+
             for await (const action of listenUntil(player.controller.getActions, 5000)) {
                 // TODO: handle user/bot actions
 
@@ -157,20 +105,20 @@ export class Game {
                         player.controller.postChanges("updateCursor", null);
                         break;
                     case "CLICK_ON_HEX":
-                        const cell = this.map.get(action.data);
+                        const tile = this.map.get(action.data);
                         
                         if (selectedUnit) {
-                            if (cell.model.owner === player.id) {
+                            if (tile.owner === player.id) {
                                 
                             }
-                            cell.model.placement = `m${selectedUnit}`;
+                            tile.placement = `m${selectedUnit}`;
                             selectedUnit = 0;
                             player.controller.postChanges("updateCursor", null);
                             session.checkpoint();
                         }
                         if (selectedBuilding) {
-                            if (cell.model.owner === player.id) {
-                                cell.model.placement = selectedBuilding;
+                            if (tile.owner === player.id) {
+                                tile.placement = selectedBuilding;
                             }
                             selectedBuilding = "";
                             player.controller.postChanges("updateCursor", null);
@@ -208,20 +156,3 @@ export class Game {
     }
 }
 
-class Zone {
-    constructor(public capital: GameHex) {
-        capital.model.isCapital = true;
-    }
-
-    get isControllable() {
-        return true;
-    }
-
-    addTile(hex: any) {
-
-    }
-    
-    removeTile(hex: any) {
-
-    }
-}

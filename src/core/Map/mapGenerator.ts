@@ -2,12 +2,12 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-20 03:09:02 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-04 17:29:51
+ * @Last Modified time: 2019-09-11 19:07:12
  */
 
 import * as Honeycomb from "honeycomb-grid";
-import { rand, sample } from "./utils";
-import { groupHexes, buildFastNeighbors } from "./Map/utils";
+import { rand, sample } from "../../utils";
+import { groupHexes, buildFastNeighbors } from "./utils";
 
 type InternalHex = Honeycomb.Hex<{marker: number}>;
 
@@ -22,7 +22,6 @@ export class Tile {
 }
 
 export type GameHex = Honeycomb.Hex<{ marker: number; model: Tile; }>;
-export type GameMap = Honeycomb.GridProto<GameHex>;
 
 function markRemoved(grid: Honeycomb.Grid, hex: Honeycomb.HexPlain) {
     const index = grid.indexOf(hex as InternalHex);

@@ -1,6 +1,5 @@
 import * as Honeycomb from "honeycomb-grid";
-import { Tile } from "../../mapGenerator";
-import { any } from "prop-types";
+import { Tile } from "../Map/mapGenerator";
 
 const versionKey = Symbol("version");
 const shadowPropsKey = Symbol("shadowProps");
@@ -81,6 +80,7 @@ export function createState() {
                 for (const slot of data.values()) {
                     slot[sessionKey][version] = slot.data[shadowPropsKey];
                     slot.data[shadowPropsKey] = Object.assign({}, slot.data[shadowPropsKey]);
+                    slot.version++;
                 }
             },
     
@@ -94,6 +94,7 @@ export function createState() {
                 for (const slot of data.values()) {
                     slot.data[shadowPropsKey] = slot[sessionKey][0];
                     delete slot[sessionKey];
+                    slot.version++;
                 }
             },
         }

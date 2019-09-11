@@ -3,9 +3,10 @@ import * as PIXI from "pixi.js";
 import { Viewport } from "pixi-viewport";
 import { Hex } from "../Hex";
 import { pick } from "../utils";
-import { generateLevel } from "../mapGenerator";
+import { generateLevel } from "../core/Map/mapGenerator";
 import { createState } from "../core/State/Manager";
 import code from "text-loader!../hex.glsl";
+import { GameMap } from "../core/GameMap";
 
 export function prepareGameEnvironment(gameContainer) {
     const width = gameContainer.clientWidth;
@@ -98,12 +99,14 @@ export function prepareGameEnvironment(gameContainer) {
                 }
             });
 
+            const map = new GameMap(grid, state);
     
             return res({
                 app,
                 viewport,
                 grid,
                 state,
+                map,
                 changeCursor,
             });
         });

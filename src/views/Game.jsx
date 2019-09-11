@@ -12,7 +12,7 @@ export class GameHolder extends React.Component {
 
 
 
-        const { app, viewport, changeCursor, grid, state } = await prepareGameEnvironment(gameContainer);
+        const { app, viewport, changeCursor, grid, state, map } = await prepareGameEnvironment(gameContainer);
 
         gameContainer.appendChild(app.view);
 
@@ -68,7 +68,7 @@ export class GameHolder extends React.Component {
             }
         }
         
-        const game = new Game(grid, state, [pl, bot, bot, bot, bot]);
+        const game = new Game(map, state, [pl, bot, bot, bot, bot]);
     
         // setInterval(async () => {
         //     await game.turn();
