@@ -17,7 +17,9 @@ export class ActionListener {
     
             emit(type: string, data: any) {
                 if (this.active) {
-                    that._handles.res({ type, data });
+                    if (that._handles) {
+                        that._handles.res({ type, data });   
+                    }
                     that._handles = undefined;
                     that._activeHandle = undefined;
                 }
