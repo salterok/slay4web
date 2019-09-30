@@ -85,6 +85,7 @@ module.exports = {
 				loader: 'ts-loader',
 				options: {
 					experimentalWatchApi: true,
+					transpileOnly: true,
 				}
 			},
 			{
