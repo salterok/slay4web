@@ -7,11 +7,12 @@ import { ActionListener } from "../ui/ActionListener";
 const listener = new ActionListener();
 
 export default function App() {
+    const [zoneInfo, changeZoneInfo] = React.useState(null);
 
     return (
         <UserActionContext.Provider value={listener}>
-            <GameHolder />
-            <SidePanel />
+            <GameHolder onZoneChange={changeZoneInfo} />
+            <SidePanel zoneInfo={zoneInfo} />
         </UserActionContext.Provider>
     );
 }

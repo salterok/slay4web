@@ -2,14 +2,14 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-11 19:37:32
+ * @Last Modified time: 2019-09-30 16:45:16
  */
 
 import * as PIXI from "pixi.js";
 import "honeycomb-grid";
 import { Tile, GameHex } from "./core/Map/mapGenerator";
 import { createState } from "./core/State/Manager";
-import { GameMap } from "./core/GameMap";
+import { GameMap, Zone } from "./core/GameMap";
 
 enum Actions {
     MoveUnit = "moveUnit",
@@ -76,6 +76,22 @@ export class Game {
         }
 
         this.map.placeZones(preparedPlayers.map(p => p.id));
+
+
+    }
+
+    computeTurn() {
+        for (const zone of this.map.getZones()) {
+            zone.gold += zone.income - zone.expenses;
+            if (zone.gold < 0) {
+                zone.gold = 0;
+                for (const tile of zone.tiles) {
+                    if (tile.placement && tile.placement.startsWith("m")) {
+                        tile.placement = "deadPlace";
+                    }
+                }
+            }
+        }
     }
 
     
@@ -89,70 +105,165 @@ export class Game {
 
             const session = this.state.beginSession();
 
-            for await (const action of listenUntil(player.controller.getActions, 5000)) {
-                // TODO: handle user/bot actions
+            handleUserActions: {
+                for await (const action of listenUntil(player.controller.getActions, Infinity)) {
+                    // TODO: handle user/bot actions
 
-                await delay(50);
+                    await delay(50);
 
-                
+                    console.log("boom", action);
 
-                console.log("boom", action);
-
-                switch (action.type) {
-                    case "RESET_SELECTION":
-                        selectedBuilding = "";
-                        selectedUnit = 0;
-                        player.controller.postChanges("updateCursor", null);
-                        break;
-                    case "CLICK_ON_HEX":
-                        const tile = this.map.get(action.data);
-                        
-                        if (selectedUnit) {
-                            if (tile.owner === player.id) {
-                                
-                            }
-                            tile.placement = `m${selectedUnit}`;
+                    switch (action.type) {
+                        case "END_TURN":
+                            player.controller.postChanges("updateCursor", null);
+                            player.controller.postChanges("updateZoneInfo", null);
+                            break handleUserActions;
+                        case "RESET_SELECTION":
+                            selectedBuilding = "";
                             selectedUnit = 0;
                             player.controller.postChanges("updateCursor", null);
-                            session.checkpoint();
-                        }
-                        if (selectedBuilding) {
-                            if (tile.owner === player.id) {
-                                tile.placement = selectedBuilding;
+                            player.controller.postChanges("updateZoneInfo", null);
+                            break;
+                        case "CLICK_ON_HEX":
+                            const tile = this.map.get(action.data);
+                            const isMine = tile.owner === player.id;
+    
+                            const zone = this.map.zoneMap.get(tile);
+                            if (zone) {
+                                if (zone.capital.owner === player.id) {
+                                    player.controller.postChanges("updateZoneInfo", {
+                                        gold: zone.gold,
+                                        income: zone.income,
+                                    });
+
+                                    player.controller.postChanges("zoneSelected", {
+                                        border: this.map.getZoneBorder(zone),
+                                    });
+                                }
+                                else {
+                                    player.controller.postChanges("updateZoneInfo", null);
+                                    
+                                }
                             }
+                            
+                            if (selectedUnit) {
+
+                                function getStrength(tile: Tile): number {
+                                    if (tile.placement && tile.placement.startsWith("m")) {
+                                        const [, num] = tile.placement.match(/m(\d)/i);
+                                        return +num;
+                                    }
+                                }
+
+                                function moveTileToPlayer(map: GameMap, zonesAround: Record<number, Zone[]>, tile: Tile, targetPlayer: number) {
+                                    const mineLandNearby = zonesAround[player.id] || [];
+                                    const enemyLandNearby = zonesAround[player.id] || [];
+
+                                    console.assert(mineLandNearby.length > 0, "There should be at least one land of attacker nearby", mineLandNearby, player.id);
+                                    let winnerZone = mineLandNearby[0];
+                                    if (mineLandNearby.length > 1) {
+                                        winnerZone = map.mergeZones(mineLandNearby);
+                                    }
+                                    else {
+                                        mineLandNearby[0].addTile(tile);
+                                    }
+
+                                    if (enemyLandNearby.length > 0) {
+                                        console.assert(enemyLandNearby.length === 1, "There should not be more than one zone around player tile in center", enemyLandNearby);
+                                        map.splitZone(enemyLandNearby[0], tile);
+                                    }
+                                    
+                                    winnerZone.addTile(tile);
+                                    tile.owner = player.id;
+                                    const tiles = map.getNeighborNoncontrollableTiles(tile, player.id);
+                                    for (const tile of tiles) {
+                                        winnerZone.addTile(tile);
+                                    }
+                                }
+                                
+                                if (isMine) {
+                                    if (tile.placement === "capital" || tile.placement === "fort") {
+                                        break;        
+                                    }
+
+                                    if (tile.placement) {
+                                        if (tile.placement.startsWith("m")) {
+                                            const targetUnit = getStrength(tile) + selectedUnit;
+                                            if (targetUnit <= 4) {
+                                                tile.placement = `m${targetUnit}`;
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        tile.placement = `m${selectedUnit}`;
+                                    }
+                                    selectedUnit = 0;
+                                    player.controller.postChanges("updateCursor", null);
+                                }
+                                else {
+                                    const zonesAround = this.map.getZonesAround(tile);
+                                    const mineLandNearby = zonesAround[player.id] || [];
+                                    if (mineLandNearby.length > 0) {
+
+                                        const defence = Math.max(getStrength(tile), ...this.map.grid.neighborsOf(tile.hex).filter(h => h.model.owner === tile.owner).map(h => getStrength(h.model)));
+
+                                        if (defence < selectedUnit) {
+                                            moveTileToPlayer(this.map, zonesAround, tile, player.id);
+                                            
+                                            tile.placement = `m${selectedUnit}`;
+                                            selectedUnit = 0;
+                                            player.controller.postChanges("updateCursor", null);
+                                        }
+                                    }
+                                }
+                                
+                                
+                                session.checkpoint();
+                            }
+                            if (selectedBuilding) {
+                                if (isMine) {
+                                    tile.placement = selectedBuilding;
+                                    selectedBuilding = "";
+                                    player.controller.postChanges("updateCursor", null);
+                                    session.checkpoint();
+                                }
+                            }
+    
+                            action.result = {some: 2};
+                            break;
+                        case "PLACE_UNIT":
+                            break;
+                        case "SELECT_UNIT":
+                            break;
+                        case "CREATE_BUILDING":
+                            selectedBuilding = "fort";
+                            selectedUnit = 0;
+                            player.controller.postChanges("updateCursor", `fort`);
+                            break;
+                        case "CREATE_UNIT":
                             selectedBuilding = "";
-                            player.controller.postChanges("updateCursor", null);
-                            session.checkpoint();
-                        }
-
-                        action.result = {some: 2};
-                        break;
-                    case "PLACE_UNIT":
-                        break;
-                    case "SELECT_UNIT":
-                        break;
-                    case "CREATE_BUILDING":
-                        selectedBuilding = "fort";
-                        selectedUnit = 0;
-                        player.controller.postChanges("updateCursor", `fort`);
-                        break;
-                    case "CREATE_UNIT":
-                        selectedBuilding = "";
-                        if (selectedUnit < 4) {
-                            selectedUnit++;
-                            player.controller.postChanges("updateCursor", `m${selectedUnit}`);
-                        }
-
-                        break;
-                    default:
-                        console.warn("unknown action", action);
+                            if (selectedUnit < 4) {
+                                selectedUnit++;
+                                player.controller.postChanges("updateCursor", `m${selectedUnit}`);
+                            }
+    
+                            break;
+                        default:
+                            console.warn("unknown action", action);
+                    } 
+                    
                 }
             }
+
+            // afterUserActions:;
 
             session.reset();
 
             // session.applySession();
         }
+
+
+        this.computeTurn();
     }
 }
 

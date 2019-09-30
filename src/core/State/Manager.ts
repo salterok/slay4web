@@ -39,7 +39,7 @@ export function createState() {
             incVersion(hex);
         }
 
-        const tile = new Tile();
+        const tile = new Tile(hex);
         onPropChange(tile, Object.getOwnPropertyNames(tile) as any, onPropsChange);
 
         return {

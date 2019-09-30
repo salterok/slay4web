@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-20 03:09:02 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-11 19:07:12
+ * @Last Modified time: 2019-09-30 16:43:28
  */
 
 import * as Honeycomb from "honeycomb-grid";
@@ -17,6 +17,10 @@ export class Tile {
     owner = 0;
     placement = "";
     isCapital = false;
+
+    constructor(public hex: GameHex) {
+        
+    }
 
     getOwnerInfo(): any { return {}; } // this will be substituted by actual implementation from Game.js
 }

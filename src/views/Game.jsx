@@ -28,11 +28,16 @@ export class GameHolder extends React.Component {
                 listener.handle.emit("RESET_SELECTION");
             }
         });
-    
+
         listener.reactStateChanged((type, data) => {
             switch (type) {
                 case "updateCursor":
                     changeCursor(data);
+                    return;
+                case "updateZoneInfo":
+                    this.props.onZoneChange(data);
+                    return;
+                case "zoneSelected":
                     return;
             }
         });
