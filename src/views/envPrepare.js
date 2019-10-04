@@ -5,7 +5,6 @@ import { Hex } from "../Hex";
 import { pick } from "../utils";
 import { generateLevel } from "../core/Map/mapGenerator";
 import { createState } from "../core/State/Manager";
-import code from "text-loader!../hex.glsl";
 import { GameMap } from "../core/GameMap";
 
 export function prepareGameEnvironment(gameContainer) {
@@ -40,7 +39,7 @@ export function prepareGameEnvironment(gameContainer) {
         .drag()
         .pinch()
         .wheel()
-        .clamp({ direction: "all" })
+        // .clamp({ direction: "all" })
         .decelerate();
 
     const grid = prepareMap();

@@ -38,6 +38,7 @@ export class GameHolder extends React.Component {
                     this.props.onZoneChange(data);
                     return;
                 case "zoneSelected":
+                    // updateZoneSelection();
                     return;
             }
         });
