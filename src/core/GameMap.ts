@@ -11,6 +11,10 @@ export class GameMap {
 
     }
 
+    public get tiles() {
+        return this.grid.map(hex => hex.model);
+    }
+
     public getZones() {
         return [...new Set(this.zoneMap.values())];
     }
@@ -144,6 +148,7 @@ export class GameMap {
                     // probably one that not far away from weighted center of zone but close to edge
 
                     const zone = new Zone(this.chooseCapital(chosenGroup.map(h => h.model)));
+                    zone.gold = Math.random() > 0.8 ? 15 : 10;
 
                     chosenGroup.forEach(hex => {
                         this.zoneMap.set(hex.model, zone);

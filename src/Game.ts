@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-30 16:45:16
+ * @Last Modified time: 2019-12-12 17:44:39
  */
 
 import * as PIXI from "pixi.js";
@@ -81,6 +81,16 @@ export class Game {
     }
 
     computeTurn() {
+        for (const tile of this.map.tiles) {
+            // TODO: spawn trees
+        }
+        // replace tombs with trees
+        for (const tile of this.map.tiles) {
+            if (tile.placement === "deadPlace") {
+                tile.placement = "tree";
+            }
+        }
+
         for (const zone of this.map.getZones()) {
             zone.gold += zone.income - zone.expenses;
             if (zone.gold < 0) {
@@ -129,7 +139,7 @@ export class Game {
                             const isMine = tile.owner === player.id;
     
                             const zone = this.map.zoneMap.get(tile);
-                            if (zone) {
+                            if (zone && !selectedUnit && !selectedBuilding) {
                                 if (zone.capital.owner === player.id) {
                                     player.controller.postChanges("updateZoneInfo", {
                                         gold: zone.gold,
@@ -156,10 +166,10 @@ export class Game {
                                 }
 
                                 function moveTileToPlayer(map: GameMap, zonesAround: Record<number, Zone[]>, tile: Tile, targetPlayer: number) {
-                                    const mineLandNearby = zonesAround[player.id] || [];
-                                    const enemyLandNearby = zonesAround[player.id] || [];
+                                    const mineLandNearby = zonesAround[targetPlayer] || [];
+                                    const enemyLandNearby = zonesAround[targetPlayer] || [];
 
-                                    console.assert(mineLandNearby.length > 0, "There should be at least one land of attacker nearby", mineLandNearby, player.id);
+                                    console.assert(mineLandNearby.length > 0, "There should be at least one land of attacker nearby", mineLandNearby, targetPlayer);
                                     let winnerZone = mineLandNearby[0];
                                     if (mineLandNearby.length > 1) {
                                         winnerZone = map.mergeZones(mineLandNearby);
@@ -174,10 +184,11 @@ export class Game {
                                     }
                                     
                                     winnerZone.addTile(tile);
-                                    tile.owner = player.id;
-                                    const tiles = map.getNeighborNoncontrollableTiles(tile, player.id);
+                                    tile.owner = targetPlayer;
+                                    const tiles = map.getNeighborNoncontrollableTiles(tile, targetPlayer);
                                     for (const tile of tiles) {
                                         winnerZone.addTile(tile);
+                                        tile.owner = targetPlayer;
                                     }
                                 }
                                 
