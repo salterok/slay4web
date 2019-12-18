@@ -3,9 +3,7 @@ import * as PIXI from "pixi.js";
 import { Viewport } from "pixi-viewport";
 import { Hex } from "../Hex";
 import { pick } from "../utils";
-import { generateLevel } from "../core/Map/mapGenerator";
-import { createState } from "../core/State/Manager";
-import { GameMap } from "../core/GameMap";
+import { initGame } from "../core";
 
 export function prepareGameEnvironment(gameContainer) {
     const width = gameContainer.clientWidth;
@@ -21,7 +19,7 @@ export function prepareGameEnvironment(gameContainer) {
 
     const background = new PIXI.Graphics();
 
-    background.beginFill(0x33A1DE);
+    background.beginFill(0xDDDDDD);
     background.drawRect(0, 0, width, height);
 
     app.stage.addChild(background);
@@ -42,11 +40,15 @@ export function prepareGameEnvironment(gameContainer) {
         // .clamp({ direction: "all" })
         .decelerate();
 
-    const grid = prepareMap();
-
     return new Promise((res, rej) => {
         app.loader.load(() => {
             const textures = setup(app);
+
+            const {
+                grid,
+                state,
+                map,
+            } = initGame(5);
 
             Hex.prototype.__debugFn = (inst) => {
                 return inst.cell.model.owner;
@@ -61,8 +63,6 @@ export function prepareGameEnvironment(gameContainer) {
                 }
                 return new PIXI.Sprite(texture);
             };
-
-            const state = createState();
         
             const renderItems = grid.map(cell => {
                 const hex = new Hex(state, cell, cellContentRenderer);
@@ -81,20 +81,6 @@ export function prepareGameEnvironment(gameContainer) {
             app.stage.addChild(viewport);
 
             const changeCursor = setupCursors(app, pick(textures, "m1", "m2", "m3", "m4", "fort"));
-
-            const HexDef = Object.getPrototypeOf(grid[0]);
-
-            // this hack here because extendHex use Object.assign to extend prototype
-            // so model getter becomes a regular field and all hexes share the same one
-            Object.defineProperty(HexDef, "model", {
-                configurable: false,
-                enumerable: false,
-                get() {
-                    return state.get(this);
-                }
-            });
-
-            const map = new GameMap(grid, state);
     
             return res({
                 app,
@@ -173,25 +159,4 @@ function setupCursors(app, cursorTypes) {
         }
     }
     return changeCursor;
-}
-
-function prepareMap() {
-    const baseSize = 30; // TODO: export to config
-    
-    performance.mark("generateLevel:start");
-    const grid = generateLevel({
-        width: 20, 
-        height: 20,
-        baseSize,
-        holes: 8,
-        maxHoleSize: 20,
-        growFactor: 0.65,
-    });
-    performance.mark("generateLevel:end");
-    performance.measure("generateLevel", "generateLevel:start", "generateLevel:end");
-    
-    console.log(grid, Array.from(grid.values()));
-
-
-    return grid;
 }

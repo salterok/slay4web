@@ -2,11 +2,10 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-25 08:31:18 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-11 19:07:13
+ * @Last Modified time: 2019-12-18 16:02:38
  */
 
 import * as Honeycomb from "honeycomb-grid";
-
 
 const NeighborsMap = Symbol("NeighborsMap");
 
@@ -16,7 +15,7 @@ export function buildFastNeighbors(grid: Honeycomb.Grid) {
         pointToHex.set(genKey(hex), hex);
     }
 
-    grid[NeighborsMap] = pointToHex;
+    (grid as any)[NeighborsMap] = pointToHex;
 }
 
 function genKey(point: Honeycomb.PointPlain) {
@@ -24,7 +23,7 @@ function genKey(point: Honeycomb.PointPlain) {
 }
 
 function neighborsOf(grid: Honeycomb.Grid, hex: Honeycomb.Hex) {
-    const pointToHex = grid[NeighborsMap] as Map<string, Honeycomb.Hex>;
+    const pointToHex = (grid as any)[NeighborsMap] as Map<string, Honeycomb.Hex>;
     const isOdd = hex.x % 2 === 0;
     
     const neighbors: Honeycomb.PointPlain[] = [
@@ -61,7 +60,7 @@ export function groupHexes<Grid extends Honeycomb.Grid, Hex extends Honeycomb.He
             }
         }
 
-        const nearGroups = [...new Set(near.map(n => groups.find(g => g.has(n))))].filter(g => g);
+        const nearGroups = [...new Set(near.map(n => groups.find(g => g.has(n as Hex))))].filter(g => g);
         if (nearGroups.length === 0) {
             const group = new Set<Hex>();
             groups.push(group);

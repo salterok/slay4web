@@ -1,5 +1,6 @@
 import * as Honeycomb from "honeycomb-grid";
-import { Tile } from "../Map/mapGenerator";
+import { Tile, GameHex } from "../Map/mapGenerator";
+import RandomProvider from "@develup/manageable-random";
 
 const versionKey = Symbol("version");
 const shadowPropsKey = Symbol("shadowProps");
@@ -31,10 +32,12 @@ interface Slot {
     data: Tile;
 }
 
-export function createState() {
-    const data = new Map<Honeycomb.Hex, Slot>();
+export function createState(seed: number) {
+    const data = new Map<GameHex, Slot>();
 
-    function createSlot(hex: Honeycomb.Hex): Slot {
+    const random = new RandomProvider(seed);
+
+    function createSlot(hex: GameHex): Slot {
         function onPropsChange<T>(propName: string, prevValue: T, nextValue: T) {
             incVersion(hex);
         }
@@ -48,7 +51,7 @@ export function createState() {
         }
     }
 
-    function incVersion(hex: Honeycomb.Hex): void {
+    function incVersion(hex: GameHex): void {
         data.get(hex).version++;
     }
 
@@ -58,16 +61,17 @@ export function createState() {
         console.log("NEW SESSION", sessionKey, data)
 
         for (const slot of data.values()) {
-            slot[sessionKey] = [slot.data[shadowPropsKey]];
-            slot.data[shadowPropsKey] = Object.assign({}, slot.data[shadowPropsKey]);
+            (slot as any)[sessionKey] = [(slot.data as any)[shadowPropsKey]];
+            (slot.data as any)[shadowPropsKey] = Object.assign({}, (slot.data as any)[shadowPropsKey]);
         }
 
         return {
-            get(hex: Honeycomb.Hex): Tile {
+            random,
+            get(hex: GameHex): Tile {
                 return (data.get(hex) || data.set(hex, createSlot(hex)).get(hex)).data;
             },
     
-            versionOf(hex: Honeycomb.Hex) {
+            versionOf(hex: GameHex) {
                 return data.get(hex).version;
             },
     
@@ -78,22 +82,22 @@ export function createState() {
             checkpoint() {
                 version++;
                 for (const slot of data.values()) {
-                    slot[sessionKey][version] = slot.data[shadowPropsKey];
-                    slot.data[shadowPropsKey] = Object.assign({}, slot.data[shadowPropsKey]);
+                    (slot as any)[sessionKey][version] = (slot.data as any)[shadowPropsKey];
+                    (slot.data as any)[shadowPropsKey] = Object.assign({}, (slot.data as any)[shadowPropsKey]);
                     slot.version++;
                 }
             },
     
             applySession() {
                 for (const slot of data.values()) {
-                    delete slot[sessionKey];
+                    delete (slot as any)[sessionKey];
                 }
             },
 
             reset() {
                 for (const slot of data.values()) {
-                    slot.data[shadowPropsKey] = slot[sessionKey][0];
-                    delete slot[sessionKey];
+                    (slot.data as any)[shadowPropsKey] = (slot as any)[sessionKey][0];
+                    delete (slot as any)[sessionKey];
                     slot.version++;
                 }
             },

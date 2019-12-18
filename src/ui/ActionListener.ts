@@ -44,4 +44,10 @@ export class ActionListener {
 
         return this._activeHandle;
     }
+
+    public post(type: string, data: any) {
+        if (this._listener) {
+            this._listener(type, data);
+        }
+    }
 }

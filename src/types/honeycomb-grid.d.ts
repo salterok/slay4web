@@ -74,8 +74,8 @@ declare module "honeycomb-grid" {
             oppositeSideDistance: () => number;
             width: () => number;
             height: () => number;
-            corners: () => PointPlain[];
-            toPoint: () => PointPlain;
+            corners: () => Point[];
+            toPoint: () => Point;
             add: (point: HexPlain | PointPlain) => this;
             subtract: (point: HexPlain | PointPlain) => this;
             equals: (point: HexPlain | PointPlain) => boolean;

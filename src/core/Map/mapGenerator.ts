@@ -2,12 +2,13 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-20 03:09:02 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-09-30 16:43:28
+ * @Last Modified time: 2019-12-18 15:59:14
  */
 
 import * as Honeycomb from "honeycomb-grid";
-import { rand, sample } from "../../utils";
+import { sample } from "../../utils";
 import { groupHexes, buildFastNeighbors } from "./utils";
+import RandomProvider from "@develup/manageable-random";
 
 type InternalHex = Honeycomb.Hex<{marker: number}>;
 
@@ -40,12 +41,12 @@ function markRemoved(grid: Honeycomb.Grid, hex: Honeycomb.HexPlain) {
  * @param {number} maxLevel 
  * @param {number} growFactor 
  */
-function computeGrowLevel(maxLevel: number, growFactor: number) {
+function computeGrowLevel(random: RandomProvider, maxLevel: number, growFactor: number) {
     let min = 1;
     let max = maxLevel;
     while(max - min > 0) {
         let curr = min + (max - min) / 2 | 0;
-        if (Math.random() < growFactor) {
+        if (random.getPercents() < growFactor) {
             min = curr;
         }
         else {
@@ -108,7 +109,7 @@ interface GenLevelOpts {
     growFactor?: number;
 }
 
-export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
+export function generateLevel<T extends Honeycomb.Hex>(random: RandomProvider, opts: GenLevelOpts) {
     const HexDef = Honeycomb.extendHex({
         size: opts.baseSize,           // default: 1
         orientation: "flat", // default: 'pointy'
@@ -121,7 +122,7 @@ export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
     const holes = [];
     const checked = new Set();
     for (let i = 0; i < opts.holes; i++) {
-        const hex = markRemoved(grid, { x: rand(opts.width), y: rand(opts.height) });
+        const hex = markRemoved(grid, { x: random.getNextInRange(0, opts.width), y: random.getNextInRange(0, opts.height) });
         holes.push(hex);
         checked.add(hex);
     }
@@ -132,7 +133,7 @@ export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
         }
         const toChoose = grid.neighborsOf(hole).filter(hex => !checked.has(hex));
 
-        const item = sample(toChoose);
+        const item = sample(toChoose, random);
         if (item) {
             checked.add(item);
             markRemoved(grid, item);
@@ -143,7 +144,7 @@ export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
 
     for (const hole of holes) {
         if (opts.maxHoleSize) {
-            const level = computeGrowLevel(opts.maxHoleSize, opts.growFactor);
+            const level = computeGrowLevel(random, opts.maxHoleSize, opts.growFactor);
             console.log(opts.maxHoleSize, opts.growFactor, level)
             growHole(hole, level);
         }
@@ -152,8 +153,8 @@ export function generateLevel<T extends Honeycomb.Hex>(opts: GenLevelOpts) {
     grid = Grid([...grid.filter(hex => !removedHexes.has(hex))]);
 
     // for testing purpose
-    globalThis.Grid = Honeycomb.Grid;
-    globalThis.Honeycomb = Honeycomb;
+    (globalThis as any).Grid = Honeycomb.Grid;
+    (globalThis as any).Honeycomb = Honeycomb;
 
     buildFastNeighbors(grid);
 

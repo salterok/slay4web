@@ -120,7 +120,7 @@ export class GameMap {
         const chosenZones = new Map<number, Zone[]>(players.map((p, i) => ([i, [] ])))
 
         for (const hex of this.grid) {
-            hex.model.owner = sample(players);
+            hex.model.owner = sample(players, this.state.random);
 
             possiblePlaces.get(hex.model.owner).push(hex);
         }
@@ -131,7 +131,7 @@ export class GameMap {
                 const places = possiblePlaces.get(player);
                 const groups = groupHexes(this.grid, places);
 
-                groups.sort((g1, g2) => g2.length - g1.length);
+                groups.sort((g1, g2) => g2.length - g1.length); // use stable sort implementation
 
                 let chosenGroup = groups.find(g => g.length >= 2);
 
@@ -148,7 +148,7 @@ export class GameMap {
                     // probably one that not far away from weighted center of zone but close to edge
 
                     const zone = new Zone(this.chooseCapital(chosenGroup.map(h => h.model)));
-                    zone.gold = Math.random() > 0.8 ? 15 : 10;
+                    zone.gold = this.state.random.getPercents() > 0.8 ? 15 : 10;
 
                     chosenGroup.forEach(hex => {
                         this.zoneMap.set(hex.model, zone);
