@@ -165,6 +165,13 @@ export class GameMap {
 
 }
 
+const unitCost = {
+    "m1": 2,
+    "m2": 6,
+    "m3": 18,
+    "m4": 42,
+}
+
 export class Zone {
     public tiles: Tile[] = [];
     public gold = 0;
@@ -174,11 +181,11 @@ export class Zone {
     }
 
     get income(): number {
-        return this.tiles.reduce((sum, tile) => tile.placement === "tree" ? 0 : 1, 0);
+        return this.tiles.reduce((sum, tile) => sum + (tile.placement === "tree" ? 0 : 1), 0);
     }
 
     get expenses(): number {
-        return this.tiles.reduce((sum, tile) => tile.placement === "tree" ? 0 : 1, 0);
+        return this.tiles.reduce((sum, tile) => sum + ((unitCost as any)[tile.placement] || 0), 0);
     }
 
     addTile(tile: Tile) {

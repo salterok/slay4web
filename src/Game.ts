@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-02-26 03:32:36 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-12-12 17:44:39
+ * @Last Modified time: 2019-12-19 12:28:32
  */
 
 import * as PIXI from "pixi.js";
@@ -163,19 +163,17 @@ export class Game {
                                         const [, num] = tile.placement.match(/m(\d)/i);
                                         return +num;
                                     }
+                                    return 0;
                                 }
 
                                 function moveTileToPlayer(map: GameMap, zonesAround: Record<number, Zone[]>, tile: Tile, targetPlayer: number) {
                                     const mineLandNearby = zonesAround[targetPlayer] || [];
-                                    const enemyLandNearby = zonesAround[targetPlayer] || [];
+                                    const enemyLandNearby = zonesAround[tile.owner] || [];
 
                                     console.assert(mineLandNearby.length > 0, "There should be at least one land of attacker nearby", mineLandNearby, targetPlayer);
                                     let winnerZone = mineLandNearby[0];
                                     if (mineLandNearby.length > 1) {
                                         winnerZone = map.mergeZones(mineLandNearby);
-                                    }
-                                    else {
-                                        mineLandNearby[0].addTile(tile);
                                     }
 
                                     if (enemyLandNearby.length > 0) {
