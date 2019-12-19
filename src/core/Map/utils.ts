@@ -2,7 +2,7 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-25 08:31:18 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-12-18 16:02:38
+ * @Last Modified time: 2019-12-19 19:00:44
  */
 
 import * as Honeycomb from "honeycomb-grid";
@@ -18,11 +18,16 @@ export function buildFastNeighbors(grid: Honeycomb.Grid) {
     (grid as any)[NeighborsMap] = pointToHex;
 }
 
+export function fastGet(grid: Honeycomb.Grid, point: Honeycomb.PointPlain) {
+    const pointToHex = (grid as any)[NeighborsMap] as Map<string, Honeycomb.Hex>;
+    return pointToHex.get(genKey(point));
+}
+
 function genKey(point: Honeycomb.PointPlain) {
     return point.x + "|" + point.y;
 }
 
-function neighborsOf(grid: Honeycomb.Grid, hex: Honeycomb.Hex) {
+export function neighborsOf(grid: Honeycomb.Grid, hex: Honeycomb.Hex) {
     const pointToHex = (grid as any)[NeighborsMap] as Map<string, Honeycomb.Hex>;
     const isOdd = hex.x % 2 === 0;
     

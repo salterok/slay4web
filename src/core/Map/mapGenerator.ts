@@ -2,12 +2,12 @@
  * @Author: Sergiy Samborskiy 
  * @Date: 2019-07-20 03:09:02 
  * @Last Modified by: Sergiy Samborskiy
- * @Last Modified time: 2019-12-18 15:59:14
+ * @Last Modified time: 2019-12-19 18:57:41
  */
 
 import * as Honeycomb from "honeycomb-grid";
 import { sample } from "../../utils";
-import { groupHexes, buildFastNeighbors } from "./utils";
+import { buildFastNeighbors, fastGet, neighborsOf } from "./utils";
 import RandomProvider from "@develup/manageable-random";
 
 type InternalHex = Honeycomb.Hex<{marker: number}>;
@@ -28,12 +28,10 @@ export class Tile {
 
 export type GameHex = Honeycomb.Hex<{ marker: number; model: Tile; }>;
 
-function markRemoved(grid: Honeycomb.Grid, hex: Honeycomb.HexPlain) {
-    const index = grid.indexOf(hex as InternalHex);
-    if (index !== -1) {
-        removedHexes.add(grid[index]);
-        return grid[index];
-    }
+function markRemoved(grid: Honeycomb.Grid, point: Honeycomb.HexPlain) {
+    const hex = fastGet(grid, point);
+    removedHexes.add(hex);
+    return hex;
 }
 
 /**
@@ -119,6 +117,8 @@ export function generateLevel<T extends Honeycomb.Hex>(random: RandomProvider, o
 
     let grid = Grid.rectangle({ width: opts.width, height: opts.height });
 
+    buildFastNeighbors(grid);
+
     const holes = [];
     const checked = new Set();
     for (let i = 0; i < opts.holes; i++) {
@@ -131,7 +131,7 @@ export function generateLevel<T extends Honeycomb.Hex>(random: RandomProvider, o
         if (level === 0) {
             return;
         }
-        const toChoose = grid.neighborsOf(hole).filter(hex => !checked.has(hex));
+        const toChoose = neighborsOf(grid, hole);
 
         const item = sample(toChoose, random);
         if (item) {
